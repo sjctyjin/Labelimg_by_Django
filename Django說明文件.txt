@@ -1,0 +1,36 @@
+1 . 開啟一個新的Django專案方式 : 再目錄夾底下輸入 django-admin startproject *專案名稱
+
+2 . 設定django後台管理員:
+
+  python ./manage.py createsuperuser
+
+  完成設定後 使用 python ./manage.py runserver 啟動網頁
+
+  再網頁的子網路輸入 127.0.0.1:8080/admin 進入頁面
+
+3 . 新增一個app應用
+  輸入 python ./manage.py startapp *app名稱
+
+
+*建立新專案或新app應用時需至根目錄應用下的 setting.py 檔案中
+在 INSTALLED_APPS = [] 裡面 增加你新增的app名稱
+
+*完成後，需要將你新增的app進行繫結，需在你的app資料夾底下新增
+一個 urls.py 並複製根目錄專案的urls.py的架構來進行修改。
+
+from django.urls import path
+from .views import index #為你的app應用的view畫面
+urlpatterns = [
+    path('index',index),
+]
+
+完成後，也須至專案根目錄的urls.py進行繫結
+
+from django.contrib import admin
+from django.urls import path,include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('',include('app.urls')),
+]
+
