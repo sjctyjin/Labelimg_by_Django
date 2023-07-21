@@ -1,0 +1,27 @@
+
+        <annotation>
+            <folder>images</folder>
+            <filename>1.jpg</filename>
+            <path>static\userdata\jim\20230209_083047-strawberry\images\1.jpg</path>
+            <source>
+                <database>Unknown</database>
+            </source>
+            <size>
+                <width>640</width>
+                <height>427</height>
+                <depth>3</depth>
+            </size>
+            <segmented>0</segmented>
+        <object>
+                    <name>Strawberry</name>
+                    <pose>Unspecified</pose>
+                    <truncated>0</truncated>
+                    <difficult>0</difficult>
+                    <bndbox>
+                        <xmin>215</xmin>
+                        <ymin>138</ymin>
+                        <xmax>541</xmax>
+                        <ymax>385</ymax>
+                    </bndbox>
+                </object>
+                </annotation>

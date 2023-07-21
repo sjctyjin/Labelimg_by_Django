@@ -1,0 +1,27 @@
+
+        <annotation>
+            <folder>images</folder>
+            <filename>0.jpg</filename>
+            <path>static\userdata\jim\20230309_152507-engine_test2\images\0.jpg</path>
+            <source>
+                <database>Unknown</database>
+            </source>
+            <size>
+                <width>554</width>
+                <height>739</height>
+                <depth>3</depth>
+            </size>
+            <segmented>0</segmented>
+        <object>
+                <name>gearbox_type1</name>
+                <pose>Unspecified</pose>
+                <truncated>0</truncated>
+                <difficult>0</difficult>
+                <bndbox>
+                    <xmin>141</xmin>
+                    <ymin>257</ymin>
+                    <xmax>416</xmax>
+                    <ymax>529</ymax>
+                </bndbox>
+            </object>
+            </annotation>

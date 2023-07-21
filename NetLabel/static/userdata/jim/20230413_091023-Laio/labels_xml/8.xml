@@ -1,0 +1,27 @@
+
+        <annotation>
+            <folder>images</folder>
+            <filename>8.jpg</filename>
+            <path>static\userdata\jim\20230413_091023-Laio\images\8.jpg</path>
+            <source>
+                <database>Unknown</database>
+            </source>
+            <size>
+                <width>2016</width>
+                <height>1512</height>
+                <depth>3</depth>
+            </size>
+            <segmented>0</segmented>
+        <object>
+                <name>Laio</name>
+                <pose>Unspecified</pose>
+                <truncated>0</truncated>
+                <difficult>0</difficult>
+                <bndbox>
+                    <xmin>742</xmin>
+                    <ymin>576</ymin>
+                    <xmax>1167</xmax>
+                    <ymax>966</ymax>
+                </bndbox>
+            </object>
+            </annotation>

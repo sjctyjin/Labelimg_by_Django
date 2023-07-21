@@ -1,0 +1,6 @@
+cucumber
+oprt
+acdr
+dog
+cat
+elephant

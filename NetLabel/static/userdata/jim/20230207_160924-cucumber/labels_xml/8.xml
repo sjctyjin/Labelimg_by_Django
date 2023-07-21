@@ -1,0 +1,27 @@
+
+        <annotation>
+            <folder>images</folder>
+            <filename>8.jpg</filename>
+            <path>static\userdata\jim\20230207_160924-cucumber\images\8.jpg</path>
+            <source>
+                <database>Unknown</database>
+            </source>
+            <size>
+                <width>180</width>
+                <height>179</height>
+                <depth>3</depth>
+            </size>
+            <segmented>0</segmented>
+        <object>
+                    <name>Kumquat</name>
+                    <pose>Unspecified</pose>
+                    <truncated>0</truncated>
+                    <difficult>0</difficult>
+                    <bndbox>
+                        <xmin>9</xmin>
+                        <ymin>37</ymin>
+                        <xmax>173</xmax>
+                        <ymax>146</ymax>
+                    </bndbox>
+                </object>
+                </annotation>

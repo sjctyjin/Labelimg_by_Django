@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'app2',
     'mysite',
     'appclass',
+    'loginapp'
 ]
 
 MIDDLEWARE = [
@@ -78,12 +79,16 @@ WSGI_APPLICATION = 'NetLabel.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'DevDb',
+        'USER': 'DevAuth',
+        'PASSWORD': 'Dev127336',
+        'HOST': '192.168.2.105',
+        'POST': '3306',
     }
 }
 
-
+#DATABASES = { 'default': {'ENGINE': 'django.db.backends.mysql','NAME': 'DevDb','USER': 'DevAuth', 'PASSWORD': 'Dev127336','HOST': '','POST': '3306',}}
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
