@@ -13,7 +13,9 @@ import cv2
 import numpy as np
 import json as d
 import yaml
-
+import pymssql
+from appclass.models import Training_cycle
+from datetime import datetime
 # Create your views here.
 
 
@@ -45,7 +47,7 @@ menu_bar = f"""
                         <li><a class="dropdown-item" href="Augmentation">影像增強</a></li>
                         <li><a class="dropdown-item" href="index">影像標註</a></li>
                         <li><a class="dropdown-item" href="#!">調用測試</a></li>
-                        <li><a class="dropdown-item" href="#!">模型檢視</a></li>
+                        <li><a class="dropdown-item" href="ModelView">模型檢視</a></li>
                         <li><a class="dropdown-item" href="training">模型訓練</a></li>
                         <li><hr class="dropdown-divider" /></li>
                         <li><a class="dropdown-item" href="logout">登出</a></li>
@@ -56,7 +58,7 @@ menu_bar = f"""
 
 """
 
-decoded_str = "123"
+decoded_str = "模型訓練中"
 
 class Message(View):
     global menu_bar
@@ -115,7 +117,10 @@ class Message(View):
                 for fi in files:
                     dirs.append(f"static/{dir_name}/{user_name}/{name}/images/{fi}".replace("\\","/"))
 
-                for fidir in os.listdir(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}'):
+                sorted_folders = sorted(os.listdir(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}'),
+                                        key=extract_datetime, reverse=True)
+
+                for fidir in sorted_folders:
                     #分割檔案名稱並重新組裝後賦值到瀏覽器
                     y = fidir.split('-')[0].split('_')[0][0:4]
                     m = fidir.split('-')[0].split('_')[0][4:6]
@@ -136,7 +141,10 @@ class Message(View):
             if not Path(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}').exists():
                 Path(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}').mkdir(parents=True, exist_ok=True)
 
-            for fidir in os.listdir(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}'):
+            sorted_folders = sorted(os.listdir(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}'),
+                                    key=extract_datetime, reverse=True)
+
+            for fidir in sorted_folders:
                 y = fidir.split('-')[0].split('_')[0][0:4]
                 m = fidir.split('-')[0].split('_')[0][4:6]
                 d = fidir.split('-')[0].split('_')[0][6:8]
@@ -208,6 +216,8 @@ class Message(View):
         print(dirs)
 
         return render(request,'index.html',{'dirs':dirs,"urlguide":f"{now}-{file_name}",'obj_name':file_name,'file_dir':user_dirs,'tags':[]})
+
+#影像標註框
 class Label_List(View):
     
     def get(self,request):
@@ -435,9 +445,10 @@ class Model_Training(View):
             dir_name = "userdata"
             user_name = request.user
             name = request.GET.get('filepath', '')
-
+            model_path = 'usermodel/{0}/{1}'.format(user_name, name)
+            model_check = 0
             # 找尋filepath目錄位置的照片
-            # 此為提供給該帳號用戶，瀏覽選擇以建立過的檔案照片
+            # 此為提供給該帳號用戶，瀏覽選擇已建立過的檔案照片
             if (name != ""):  # 若當前路徑有指定目錄名稱
                 save_path = f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}/{name}/images/'
                 dirs = []
@@ -458,7 +469,12 @@ class Model_Training(View):
                     for fi in files:
                         dirs.append(f"static/{dir_name}/{user_name}/{name}/images/{fi}".replace("\\", "/"))
 
-                    for fidir in os.listdir(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}'):
+
+
+                    sorted_folders = sorted(os.listdir(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}'), key=extract_datetime, reverse=True)
+
+                    for fidir in sorted_folders:
+                        print(fidir)
                         # 分割檔案名稱並重新組裝後賦值到瀏覽器
                         y = fidir.split('-')[0].split('_')[0][0:4]
                         m = fidir.split('-')[0].split('_')[0][4:6]
@@ -467,9 +483,22 @@ class Model_Training(View):
                         min = fidir.split('-')[0].split('_')[1][2:4]
                         s = fidir.split('-')[0].split('_')[1][4:6]
                         user_dirs.append([fidir, f'{y}-{m}-{d} {h}:{min}:{s}'])
+                    # print(user_dirs)
+
+                    if not Path(f"{settings.MEDIA_ROOT[0]}/{model_path}").exists():
+                        print("創建", f"{settings.MEDIA_ROOT[0]}/{model_path}")
+                        Path(f"{settings.MEDIA_ROOT[0]}/{model_path}").mkdir(parents=True, exist_ok=True)
+                    else:
+                        print("HERE")
+                        for fidir in os.listdir(f"{settings.MEDIA_ROOT[0]}/{model_path}"):
+                            if os.path.isdir(os.path.join(f"{settings.MEDIA_ROOT[0]}/{model_path}", fidir)):
+                                print(fidir)
+                                model_check = 1#若發現資料夾，表示已執行過訓練
+                            else:
+                                print("不是資料夾")
                     return render(request, 'training.html',
                                   {'dirs': dirs, 'user': user_name, 'obj_name': name.split('-')[1],
-                                   'file_dir': user_dirs, 'tags': tags, 'menu': menu_bar})
+                                   'file_dir': user_dirs, 'tags': tags, 'menu': menu_bar,'check_model':model_check})
                 except:
                     print(traceback.format_exc())
 
@@ -482,7 +511,10 @@ class Model_Training(View):
                 if not Path(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}').exists():
                     Path(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}').mkdir(parents=True, exist_ok=True)
 
-                for fidir in os.listdir(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}'):
+                sorted_folders = sorted(os.listdir(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}'),
+                                        key=extract_datetime, reverse=True)
+
+                for fidir in sorted_folders:
                     y = fidir.split('-')[0].split('_')[0][0:4]
                     m = fidir.split('-')[0].split('_')[0][4:6]
                     d = fidir.split('-')[0].split('_')[0][6:8]
@@ -503,24 +535,41 @@ class Model_Training(View):
             save_path = 'usermodel/{0}/{1}'.format(user,filepath)
             data_path = 'userdata/{0}'.format(user)
             nc = 1
+            if not Path(f"{settings.MEDIA_ROOT[0]}/{save_path}").exists():
+                print("創建",f"{settings.MEDIA_ROOT[0]}/{save_path}")
+                Path(f"{settings.MEDIA_ROOT[0]}/{save_path}").mkdir(parents=True, exist_ok=True)
+            # with open(file_up, 'r', encoding='GBK') as file:
 
+            lab_ptr = []#確認陣列
+            unlabel = ""
+            try:
+                image_file = [line.decode("utf-8") for line in os.listdir(f"{settings.MEDIA_ROOT[0]}/{data_path}/{filepath}/labels".encode("utf-8"))]
+                #確認圖片數量
+                check_img = len(os.listdir(f"{settings.MEDIA_ROOT[0]}/{data_path}/{filepath}/images"))
+                #確認有哪幾張尚未被標註，若發現未標註圖片會記錄到 lab_ptr 陣列
+                for imgsfile in range(len(os.listdir(f"{settings.MEDIA_ROOT[0]}/{data_path}/{filepath}/images"))):
+                    check = 0
+                    #label數量
+                    for label_file in image_file:
+                        if label_file.split('.')[0] == str(imgsfile):
+                            check = 1
+                    if check == 0:
+                        lab_ptr.append(f"{imgsfile}.jpg")
+            except:
+                print(traceback.print_exc())
 
-            image_file = [line for line in os.listdir(f"{settings.MEDIA_ROOT[0]}/{data_path}/{filepath}/labels")]
-            lab_ptr = []
-            for imgsfile in range(len(os.listdir(f"{settings.MEDIA_ROOT[0]}/{data_path}/{filepath}/images"))):
-                check = 0
-                for label_file in image_file:
-                    if label_file.split('.')[0] == str(imgsfile):
-                        check = 1
-                if check == 0:
-                    lab_ptr.append(f"{imgsfile}.jpg")
+            if lab_ptr != []:
+                print("No finish yet")
+                for lab in lab_ptr:
+                    unlabel += lab+'<br/>'
+                # return JsonResponse({'status':f'尚未進行標註，無法執行訓練'})
+            elif len(lab_ptr) == check_img:#若未標註數量與圖片數量相同，代表皆未標註
+                print("Not Finish at all")
+                return JsonResponse({'status':f'尚未進行標註，無法執行訓練'})
 
-            # if lab_ptr != []:
-            #     print("No finish yet")
-            #     return HttpResponse(f"{lab_ptr}尚未進行標註，無法執行訓練")
+                # return HttpResponse(f"尚未進行標註，無法執行訓練")
 
-
-
+            #建立training.yaml需要的classname
             labelname = "["
             with open(f"{settings.MEDIA_ROOT[0]}/{data_path}/{filepath}/classes.txt", "r") as f:
                 lines = [line.strip() for line in f]
@@ -528,31 +577,58 @@ class Model_Training(View):
                 for i in lines:
                     labelname += f"'{i}',"
                 labelname = labelname[:-1]+"]"
-            # print(labelname)
-            if not Path(f"{settings.MEDIA_ROOT[0]}/{save_path}").exists():
-                print("創建")
-                Path(save_path).mkdir(parents=True, exist_ok=True)
-            data = f"path: ../{data_path}\ntrain: {filepath}/images\nval: {filepath}/images\nnc: {nc}\nnames: {labelname}"
 
+            # print(labelname)
+
+            data = f"path: ../{data_path}\ntrain: {filepath}/images\nval: {filepath}/images\nnc: {nc}\nnames: {labelname}"
+            #開始訓練
             try:
                 with open(f'{settings.MEDIA_ROOT[0]}/{save_path}/training_data.yaml', "w") as f:
                     f.write(data)
+
                 training_Yolov5(imagesize=ImageSize, batch=batch, epoch=epoch, model=model,
-                                data=f"static/{save_path}/training_data.yaml", savepath=f"static/{save_path}", name=filepath.split('-')[1])
-            #     # yaml.dump(data, f)
+                                data=f"static/{save_path}/training_data.yaml", savepath=f"static/{save_path}", name=filepath.split('-')[1],username=user)
             except:
+                print("wrong")
+                print(traceback.print_exc())
                 return HttpResponse("Fail")
 
+            filtered_books = Training_cycle.objects.filter(userid=request.user.id)
+            finish_times = datetime.strptime(str(filtered_books[0].finish_time)[:-6],"%Y-%m-%d %H:%M:%S")
+            return JsonResponse({'status': 'success','finish':finish_times,'unlabel':unlabel})
 
-            return JsonResponse({'status': 'success'})
 
         def get_training_progress(request):
             global decoded_str
             # 從保存的 process 對象中獲取訓練進度
-            progress = decoded_str
-            print("測試",progress)
+            if not request.user.is_authenticated:
+                return HttpResponse("No authenticated")
 
-            return JsonResponse({'status': progress})
+            progress = ""
+            finish_times = ""
+            try:
+                filtered_books = Training_cycle.objects.filter(userid=request.user.id)
+                print(filtered_books[0].progress)
+
+                finish_times = datetime.strptime(str(filtered_books[0].finish_time)[:-6],"%Y-%m-%d %H:%M:%S")
+
+                print(finish_times.timestamp())
+                print(datetime.now().timestamp())
+                if (datetime.now().timestamp()-finish_times.timestamp()) > 10:
+
+                    progress = filtered_books[0].progress if filtered_books[0].progress!= "100%" else "0%"  # 完成度
+                else:
+                    progress = filtered_books[0].progress  # 完成度
+            except:
+                progress = "Waitting...."
+                # cuser = Training_cycle.objects.create(userid_id=request.user.id)
+                # cuser = Training_cycle.objects.create(progress="0%")
+                # cuser.save()
+            # progress = decoded_str
+            print("進度 : ",progress)
+            # struct_time = time.strptime(str(filtered_books[0].finish_time), "%Y-%m-%d %H:%M:%S")  # 轉成時間元組
+
+            return JsonResponse({'status': progress,'finish':finish_times})
 
 class Data_Augmentation(View):
 
@@ -612,8 +688,10 @@ class Data_Augmentation(View):
 
                 for fi in files:
                     dirs.append(f"static/{dir_name}/{user_name}/{name}/images/{fi}".replace("\\", "/"))
+                sorted_folders = sorted(os.listdir(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}'),
+                                        key=extract_datetime, reverse=True)
 
-                for fidir in os.listdir(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}'):
+                for fidir in sorted_folders:
                     # 分割檔案名稱並重新組裝後賦值到瀏覽器
                     y = fidir.split('-')[0].split('_')[0][0:4]
                     m = fidir.split('-')[0].split('_')[0][4:6]
@@ -635,7 +713,9 @@ class Data_Augmentation(View):
             if not Path(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}').exists():
                 Path(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}').mkdir(parents=True, exist_ok=True)
 
-            for fidir in os.listdir(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}'):
+            sorted_folders = sorted(os.listdir(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}'),
+                                    key=extract_datetime, reverse=True)
+            for fidir in sorted_folders:
                 y = fidir.split('-')[0].split('_')[0][0:4]
                 m = fidir.split('-')[0].split('_')[0][4:6]
                 d = fidir.split('-')[0].split('_')[0][6:8]
@@ -865,7 +945,174 @@ class Data_Augmentation(View):
         # return render(request, 'index.html')
         return render(request, 'index.html')
 
+class Model_Examine(View):
+    global menu_bar
+    global decoded_str
 
+    def get(self, request):
+        if not request.user.is_authenticated:
+            # return render(request, 'please_login.html')
+            return HttpResponse("""
+                              <style>
+                              .square {
+
+                          /* animation 參數設定 */
+                          animation-name: MoveToRight;    /*動畫名稱，需與 keyframe 名稱對應*/
+                          animation-duration: 2s;    /*動畫持續時間，單位為秒*/
+                          animation-delay: 0s;    /*動畫延遲開始時間*/
+                          animation-iteration-count: infinite;    /*動畫次數，infinite 為無限次*/
+                      }
+
+                      @keyframes MoveToRight {
+                          from { top: 0%;opacity:0;  }
+                          to { top: 5%;opacity:1; }
+                      }
+                              </style>
+                             <div class="square" style="padding:20px;position:absolute;top:40%;width:80%;left:10%;
+                             border-radius:15px;
+                             background-color:#FFB5B5;
+                             color:#FF2D2D;
+                             font-size;5vmin;text-align:center;">
+                               無權操作，請先登入<br/>
+                              </div>
+                              <script>setTimeout("location.href='login'",2000);</script>""")
+
+        dir_name = "usermodel"
+        user_name = request.user
+        name = request.GET.get('filepath', '')
+        model_path = 'usermodel/{0}/{1}'.format(user_name, name)
+        model_check = 0
+        # 找尋filepath目錄位置的照片
+        # 此為提供給該帳號用戶，瀏覽選擇已建立過的檔案照片
+        if (name != ""):  # 若當前路徑有指定目錄名稱
+            save_path = f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}/{name}/'
+            print(save_path)
+            dirs = []
+            user_dirs = []
+            try:
+                files = os.listdir(save_path)
+                #"訓練資料結果"
+                subdirectories = [f for f in files if os.path.isdir(os.path.join(save_path, f))]
+                sorted_subdirectories = sorted(subdirectories,
+                                               key=lambda f: os.path.getctime(os.path.join(save_path, f)), reverse=True)
+                print("訓練資料 : ",sorted_subdirectories)
+
+                for fi in sorted_subdirectories:
+                    dirs.append(f"static/{dir_name}/{user_name}/{name}/{fi}".replace("\\", "/"))
+
+                sorted_folders = sorted(os.listdir(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}'),
+                                        key=extract_datetime, reverse=True)
+
+                for fidir in sorted_folders:
+                    print(fidir)
+                    # 分割檔案名稱並重新組裝後賦值到瀏覽器
+                    y = fidir.split('-')[0].split('_')[0][0:4]
+                    m = fidir.split('-')[0].split('_')[0][4:6]
+                    d = fidir.split('-')[0].split('_')[0][6:8]
+                    h = fidir.split('-')[0].split('_')[1][0:2]
+                    min = fidir.split('-')[0].split('_')[1][2:4]
+                    s = fidir.split('-')[0].split('_')[1][4:6]
+                    user_dirs.append([fidir, f'{y}-{m}-{d} {h}:{min}:{s}'])
+
+                return render(request, 'model.html',
+                              {'dirs': dirs, 'user': user_name, 'obj_name': name.split('-')[1],
+                               'file_dir': user_dirs, 'menu': menu_bar})
+            except:
+                print(traceback.format_exc())
+
+                return render(request, 'training.html', {'user': user_name, 'menu': menu_bar})
+        else:
+            user_dirs = []
+
+            # 如果為初次登入使用者，為其建立資料夾
+            if not Path(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}').exists():
+                Path(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}').mkdir(parents=True, exist_ok=True)
+
+            sorted_folders = sorted(os.listdir(f'{settings.MEDIA_ROOT[0]}/{dir_name}/{user_name}'),
+                                    key=extract_datetime, reverse=True)
+            print(sorted_folders)
+            for fidir in sorted_folders:
+                y = fidir.split('-')[0].split('_')[0][0:4]
+                m = fidir.split('-')[0].split('_')[0][4:6]
+                d = fidir.split('-')[0].split('_')[0][6:8]
+                h = fidir.split('-')[0].split('_')[1][0:2]
+                min = fidir.split('-')[0].split('_')[1][2:4]
+                s = fidir.split('-')[0].split('_')[1][4:6]
+                user_dirs.append([fidir, f'{y}-{m}-{d} {h}:{min}:{s}'])
+            return render(request, 'model.html', {'user': user_name, 'file_dir': user_dirs, 'menu': menu_bar})
+        # return render(request, 'training.html', {'user': user_name, 'menu': menu_bar})
+
+    def post(self, request):
+        import pandas as pd
+
+        filepath = request.POST.get('filepath', '')
+        modelpath = request.POST.get('modelpath', '')
+        print(modelpath)
+        user = request.user
+        save_path = 'usermodel/{0}/{1}'.format(user, filepath)
+        data_path = 'userdata/{0}'.format(user)
+        modeldir = f"{settings.MEDIA_ROOT[0]}/{modelpath[7:]}"
+
+        epoch = ["0"]
+        precision = ["0"]
+        mAP_05 = ["0"]
+        mAP_0595 = ["0"]
+        training_loss = ["0"]
+        dataframe_in_table = []#訓練結果csv
+        vali_label = ""#驗證標註結果路徑
+        vali_pred = ""#驗證測試結果路徑
+        ckeck_csv = 0
+        ckeck_label = 0
+        ckeck_pred = 0
+        for result in os.listdir(modeldir):
+            if os.path.isfile(os.path.join(modeldir,result)):
+                if result.split('.')[1] == "csv":
+                    ckeck_csv = 1
+                    selected_cols = [0, 1, 4, 5, 6, 7]
+                    df = pd.read_csv(os.path.join(modeldir,result), usecols=selected_cols)
+                    for i in df.values.tolist():
+                        dataframe_in_table.append({'epcoh':int(i[0]),
+                                                   'loss':i[1],
+                                                   'precision':i[2],
+                                                   'recall':i[3],
+                                                   'map05':i[4],
+                                                   'map0595':i[5]})
+                    epoch = df.iloc[:,0].tolist()
+                    precision = df.iloc[:,2].tolist()
+                    mAP_05 = df.iloc[:,4].tolist()
+                    mAP_0595 = df.iloc[:,5].tolist()
+                    training_loss = df.iloc[:,1].tolist()
+                    # print()
+                    # print(df.iloc[:,0].tolist())
+                    # print(df.iloc[:,4].tolist())
+                    # print("路徑", result)
+                elif result.split('.')[1] == "jpg":
+                    if result.split('.')[0] == "val_batch0_labels":
+                        vali_label = modelpath+'/'+result
+                        ckeck_label = 1
+                    elif result.split('.')[0] == "val_batch0_pred":
+                        vali_pred  = modelpath+'/'+result
+                        ckeck_pred = 1
+        if ckeck_csv == 0:#若無result.csv則將數值清空
+            epoch = ["0"]
+            precision = ["0"]
+            mAP_05 = ["0"]
+            mAP_0595 = ["0"]
+            training_loss = ["0"]
+
+        vali_label = vali_label if ckeck_label == 1 else ""
+        vali_pred = vali_pred if ckeck_pred == 1 else ""
+
+
+        return JsonResponse({'status': 'success', 'finish': save_path,
+                             'epoch':epoch,
+                             'precision':precision,
+                             'mAP_0.5':mAP_05,
+                             'mAP_0.5:0.95':mAP_0595,
+                             'training_loss':training_loss,
+                             'datatable':dataframe_in_table,
+                             'vali_label':vali_label,
+                             'vali_pred' :vali_pred})
 #旋轉圖片
 def rotation(src, angel=0, scale=1):
     h, w = src.shape[:2]
@@ -884,9 +1131,8 @@ def imgresize(src,w=None,h=None,scale=1):
     img = cv2.resize(src,(w,h),interpolation=cv2.INTER_LINEAR)
     return img
 
-def training_Yolov5(imagesize=416,batch=5,epoch=10,model="yolov5s",data="static/yolov5/dataset_kumquat_1.yaml",savepath='runs/train',name='exp'):
-    import subprocess
-    global decoded_str
+#yolov5訓練指令
+def training_Yolov5(imagesize=416,batch=5,epoch=10,model="yolov5s",data="static/yolov5/dataset_kumquat_1.yaml",savepath='runs/train',name='exp',username=""):
     # 定义要执行的命令
     command = f"python static/yolov5/train.py " \
               f"--img {imagesize} " \
@@ -897,30 +1143,20 @@ def training_Yolov5(imagesize=416,batch=5,epoch=10,model="yolov5s",data="static/
               f"--weights static/yolov5/{model}.pt " \
               f"--device 0 " \
               f"--project {savepath} " \
-              f"--name {name}"
-    command = "ping 192.168.2.105"
-    # print(command)
-    # 执行命令，并捕获输出
-    # output = subprocess.check_output(command, shell=True)
-    # process = subprocess.Popen("your_command", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    # 逐行讀取命令輸出
-    for line in process.stdout:
-        decoded_str = line.decode("big5", errors="ignore").strip()
-        print(decoded_str)
+              f"--name {name} " \
+              f"--username {username}"
+    print(command)
+    os.system(command)
 
-    # print(k)
-    # 等待命令執行完成
-    process.wait()
-    # decoded_str = os.popen(command).readlines()
-    # print(decoded_str)
-
-    # try:
-    #     # 尝试使用UTF-8解码
-    #     decoded_str = output.decode("utf-8")
-    #     print("測試 二 : ",decoded_str)
-    # except UnicodeDecodeError:
-    #     # 如果解码失败，尝试使用latin1编码
-    #     decoded_str = output.decode("latin1")
-    #     print(decoded_str)
-
+#資料夾排序
+def extract_datetime(folder_name):
+    # 設定資料夾名稱的格式為 'YYYYMMDD_HHMMSS'
+    # 例如 '20230723_150202'
+    date_str, time_str = folder_name.split('-')[0].split('_')
+    year = int(date_str[:4])
+    month = int(date_str[4:6])
+    day = int(date_str[6:8])
+    hour = int(time_str[:2])
+    minute = int(time_str[2:4])
+    second = int(time_str[4:6])
+    return (year, month, day, hour, minute, second)

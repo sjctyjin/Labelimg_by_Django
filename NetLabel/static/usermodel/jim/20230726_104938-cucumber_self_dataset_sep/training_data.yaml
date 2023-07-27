@@ -1,0 +1,5 @@
+path: ../userdata/jim
+train: 20230726_104938-cucumber_self_dataset_sep/images
+val: 20230726_104938-cucumber_self_dataset_sep/images
+nc: 1
+names: ['cucumber']

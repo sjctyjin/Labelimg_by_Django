@@ -1,0 +1,5 @@
+path: ../userdata/test01
+train: 20230713_080859-B0/images
+val: 20230713_080859-B0/images
+nc: 1
+names: ['flower']

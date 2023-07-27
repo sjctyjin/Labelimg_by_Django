@@ -1,0 +1,5 @@
+path: ../userdata/jim2
+train: 20230208_094729-test1/images
+val: 20230208_094729-test1/images
+nc: 2
+names: ['cucumber','tv']

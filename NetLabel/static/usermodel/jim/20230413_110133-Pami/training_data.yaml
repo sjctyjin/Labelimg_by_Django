@@ -1,0 +1,5 @@
+path: ../userdata/jim
+train: 20230413_110133-Pami/images
+val: 20230413_110133-Pami/images
+nc: 1
+names: ['pami']

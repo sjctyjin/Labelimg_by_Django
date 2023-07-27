@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'app2',
     'mysite',
     'appclass',
-    'loginapp'
+    'loginapp',
 ]
 
 MIDDLEWARE = [
@@ -77,17 +77,29 @@ WSGI_APPLICATION = 'NetLabel.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'DevDb',
+#         'USER': 'DevAuth',
+#         'PASSWORD': 'Dev127336',
+#         'HOST': '192.168.2.105',
+#         'POST': '3306',
+#     }
+# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'DevDb',
-        'USER': 'DevAuth',
-        'PASSWORD': 'Dev127336',
+        'ENGINE': 'mssql',
+        'NAME': 'Djangouse',
+        'USER': 'sa',
+        'PASSWORD': 'pass',
         'HOST': '192.168.2.105',
-        'POST': '3306',
+        'PORT': '',  # Leave this empty to use the default SQL Server port (1433)
+        'OPTIONS': {
+            'driver': 'SQL Server Native Client 11.0',  # Adjust the driver version if needed
+        },
     }
 }
-
 #DATABASES = { 'default': {'ENGINE': 'django.db.backends.mysql','NAME': 'DevDb','USER': 'DevAuth', 'PASSWORD': 'Dev127336','HOST': '','POST': '3306',}}
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

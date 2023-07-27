@@ -10,5 +10,6 @@ urlpatterns = [
     path('Augmentation',Data_Augmentation.as_view(),name='Augmentation'),
     path('Augmentation/action',Data_Augmentation.augment,name='Augmentation/action'),
     path('Augmentation/export',Data_Augmentation.image_label,name='Augmentation/export'),
+    path('ModelView',Model_Examine.as_view(),name='ModelView'),
     # path('index/<str:name>/<int:age>',index),
 ]

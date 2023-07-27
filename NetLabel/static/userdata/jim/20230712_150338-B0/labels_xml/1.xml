@@ -13,15 +13,15 @@
             </size>
             <segmented>0</segmented>
         <object>
-                <name>born</name>
-                <pose>Unspecified</pose>
-                <truncated>0</truncated>
-                <difficult>0</difficult>
-                <bndbox>
-                    <xmin>305</xmin>
-                    <ymin>205</ymin>
-                    <xmax>403</xmax>
-                    <ymax>311</ymax>
-                </bndbox>
-            </object>
-            </annotation>
+                    <name>born</name>
+                    <pose>Unspecified</pose>
+                    <truncated>0</truncated>
+                    <difficult>0</difficult>
+                    <bndbox>
+                        <xmin>305</xmin>
+                        <ymin>205</ymin>
+                        <xmax>403</xmax>
+                        <ymax>311</ymax>
+                    </bndbox>
+                </object>
+                </annotation>

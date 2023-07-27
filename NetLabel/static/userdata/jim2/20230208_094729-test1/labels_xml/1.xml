@@ -13,15 +13,15 @@
             </size>
             <segmented>0</segmented>
         <object>
-                <name>Kumquat</name>
-                <pose>Unspecified</pose>
-                <truncated>0</truncated>
-                <difficult>0</difficult>
-                <bndbox>
-                    <xmin>46</xmin>
-                    <ymin>48</ymin>
-                    <xmax>299</xmax>
-                    <ymax>124</ymax>
-                </bndbox>
-            </object>
-            </annotation>
+                    <name>tv</name>
+                    <pose>Unspecified</pose>
+                    <truncated>0</truncated>
+                    <difficult>0</difficult>
+                    <bndbox>
+                        <xmin>93</xmin>
+                        <ymin>287</ymin>
+                        <xmax>460</xmax>
+                        <ymax>557</ymax>
+                    </bndbox>
+                </object>
+                </annotation>

@@ -13,15 +13,15 @@
             </size>
             <segmented>0</segmented>
         <object>
-                <name>pami</name>
-                <pose>Unspecified</pose>
-                <truncated>0</truncated>
-                <difficult>0</difficult>
-                <bndbox>
-                    <xmin>495</xmin>
-                    <ymin>285</ymin>
-                    <xmax>821</xmax>
-                    <ymax>585</ymax>
-                </bndbox>
-            </object>
-            </annotation>
+                    <name>pami</name>
+                    <pose>Unspecified</pose>
+                    <truncated>0</truncated>
+                    <difficult>0</difficult>
+                    <bndbox>
+                        <xmin>495</xmin>
+                        <ymin>285</ymin>
+                        <xmax>821</xmax>
+                        <ymax>585</ymax>
+                    </bndbox>
+                </object>
+                </annotation>

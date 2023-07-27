@@ -13,15 +13,15 @@
             </size>
             <segmented>0</segmented>
         <object>
-                <name>cucumber</name>
-                <pose>Unspecified</pose>
-                <truncated>0</truncated>
-                <difficult>0</difficult>
-                <bndbox>
-                    <xmin>21</xmin>
-                    <ymin>202</ymin>
-                    <xmax>150</xmax>
-                    <ymax>413</ymax>
-                </bndbox>
-            </object>
-            </annotation>
+                    <name>cucumber</name>
+                    <pose>Unspecified</pose>
+                    <truncated>0</truncated>
+                    <difficult>0</difficult>
+                    <bndbox>
+                        <xmin>21</xmin>
+                        <ymin>202</ymin>
+                        <xmax>150</xmax>
+                        <ymax>413</ymax>
+                    </bndbox>
+                </object>
+                </annotation>

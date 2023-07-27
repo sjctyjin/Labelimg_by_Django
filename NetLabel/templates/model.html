@@ -1,0 +1,942 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <link rel="shortcut icon" href="static/favicon.ico" type="image/x-icon">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>模型檢視</title>
+        <link href="static/css/styles.css" rel="stylesheet" />
+        <link href="static/css/table_style.css" rel="stylesheet" />
+
+        <script src="static/js/all.js" crossorigin="anonymous"></script>
+        <link href="static/js/jquery-ui.css" rel="stylesheet" />
+        <script src="static/js/jquery.js"></script>
+        <script src="static/js/jquery-ui.js"></script>
+        <link rel="stylesheet" href="static/css/dataTables.min.css">
+        <script src="static/js/jquery.dataTables.min.js"></script>
+      
+        <style>
+/* botstrap */
+.funkyradio div {
+  clear: both;
+  overflow: hidden;
+}
+
+.funkyradio label {
+  width: 50%;
+  border-radius: 3px;
+  border: 1px solid #D1D3D4;
+  font-weight: normal;
+}
+
+.funkyradio input[type="radio"]:empty,
+.funkyradio input[type="checkbox"]:empty {
+  display: none;
+}
+
+.funkyradio input[type="radio"]:empty ~ label,
+.funkyradio input[type="checkbox"]:empty ~ label {
+  position: relative;
+  line-height: 1.5em;
+  text-indent: 3.25em;
+  margin-top: 1em;
+  cursor: pointer;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+
+.funkyradio input[type="radio"]:empty ~ label:before,
+.funkyradio input[type="checkbox"]:empty ~ label:before {
+  position: absolute;
+  display: block;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  content: '';
+  width: 2em;
+  background: #D1D3D4;
+  border-radius: 3px 0 0 3px;
+}
+
+.funkyradio input[type="radio"]:hover:not(:checked) ~ label,
+.funkyradio input[type="checkbox"]:hover:not(:checked) ~ label {
+  color: #888;
+}
+
+.funkyradio input[type="radio"]:hover:not(:checked) ~ label:before,
+.funkyradio input[type="checkbox"]:hover:not(:checked) ~ label:before {
+  content: '\2611';
+  text-indent: .2em;
+  color: #C2C2C2;
+}
+
+.funkyradio input[type="radio"]:checked ~ label,
+.funkyradio input[type="checkbox"]:checked ~ label {
+  color: #777;
+}
+
+.funkyradio input[type="radio"]:checked ~ label:before,
+.funkyradio input[type="checkbox"]:checked ~ label:before {
+  content: '\2611';
+  text-indent: .3em;
+  color: #1341e7;
+  background-color: #360ed6;
+}
+
+.funkyradio input[type="radio"]:focus ~ label:before,
+.funkyradio input[type="checkbox"]:focus ~ label:before {
+  box-shadow: 0 0 0 3px #999;
+}
+
+.funkyradio-default input[type="radio"]:checked ~ label:before,
+.funkyradio-default input[type="checkbox"]:checked ~ label:before {
+  color: #2544d1;
+  background-color: #f1f1f1;
+}
+
+/*  */
+            .updf{
+              position: absolute;
+              width: 100%;
+              left: 0%;
+              border: 1px silver solid;
+              border-radius: 25px;
+              padding: 0px;
+  
+            }
+             #upd_tb{
+              margin: 0;
+              margin-left: auto;
+              margin-right: auto;
+              width:100%;
+              left: 0%;
+              position: relative;
+             
+             }
+
+             .ui-autocomplete{
+                    z-index: 99999;
+
+             }
+             #upd_tb td{
+              border: 0px silver solid;
+              padding: 5px;
+              font-size: 2.5vmin;
+              
+             }
+             .btn{
+              font-size: 2.5vmin;
+             }
+             #foldername{
+                width: 50%;
+  
+             }
+
+             /* #label_img{
+                user-select: none;-webkit-user-drag: none;
+             } */
+
+            div#imgarea{
+                /* background-image: url(static/demo1.jpg); */
+                background-repeat: no-repeat;float: left;background-size: cover;
+            }
+            canvas#pCanvas{
+                cursor: pointer;
+            }
+            canvas#cimage{
+                border: 0px dotted;
+            }
+
+            #filelist{
+                height:50vh;
+            }
+
+          </style>
+          <script>
+            //全域變數
+            var canvas, context, image;
+            var arr = new Array();
+            var clone_panel;
+            var availableTags = [];
+            var origin_size = 0;
+            var now_size = 0;
+            var Precision_Chart;
+            var Loss_Chart;
+            var MAP05_Chart;
+            var MAP0595_Chart;
+
+            function delay(n){
+                return new Promise(function(resolve){
+                    setTimeout(resolve,n*1000);
+                });
+            }
+
+            //載入網頁時,同時載入圖片
+            async function myAsyncFunction(seleceidx){
+                        
+                var filename = document.getElementById("filelist").options[seleceidx].text;                
+                var csrft = $("[name='csrfmiddlewaretoken']").val();
+                document.getElementsByClassName("mt-4")[0].innerHTML = filename.split('/')[4];
+                
+                $.ajax({
+                    url:"ModelView",
+                    type:"POST",
+                    contentType: "application/x-www-form-urlencoded;charset=UTF-8",
+                    //Django用法 Post接收contentType 使用x-www-form-urlencoded
+                    //一般使用 application/json;
+                    data:                   
+                    {   
+                       
+                        "filepath":window.location.search.substr(10),
+                        "modelpath":filename,
+                        "csrfmiddlewaretoken":csrft,
+                                        
+                    }
+                    ,dataType: 'json',
+
+                        success: function(data){
+                        // console.log('ajax result:')
+                        console.log("datatable : ",data['vali_label']);
+                        console.log("datatable : ",data['vali_pred']);
+                       
+                        $("#ground").attr("src",data['vali_label']);
+                        $("#predict").attr("src",data['vali_pred'])
+                        //將result資料送進dataTable中
+                        pushTable(data['datatable']);
+                        Precision_Chart.data.labels = data['epoch'];
+                        Precision_Chart.data.datasets[0].data = data['precision'];
+                        Precision_Chart.update();
+                        MAP05_Chart.data.labels = data['epoch'];
+                        MAP05_Chart.data.datasets[0].data = data['mAP_0.5'];
+                        MAP05_Chart.update();
+                        MAP0595_Chart.data.labels = data['epoch'];
+                        MAP0595_Chart.data.datasets[0].data = data['mAP_0.5:0.95'];
+                        MAP0595_Chart.update();
+                        Loss_Chart.data.labels = data['epoch'];
+                        Loss_Chart.data.datasets[0].data = data['training_loss'];
+                        Loss_Chart.update();
+                        
+                    }
+                }).done(function(response) {
+                // 請求成功的處理
+                    console.log('請求成功:', response);
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    // 請求失敗的處理
+                    console.log('請求失敗:', textStatus, errorThrown);
+                    })
+
+
+            }
+
+            async function loge(){
+                var scrolele = document.getElementById("filelist");
+
+            if(document.getElementById('class_by_keyword') != document.activeElement){
+
+                    switch (event.key) {
+                        case "a":
+                            if(document.getElementById("filelist").options.length > 0){
+                                
+                                var idx = document.getElementById("filelist").selectedIndex;
+                                if(parseInt(idx) > 0 ){                                 
+                                    //Step1. 載入上一張
+                                    document.getElementById("filelist").selectedIndex = parseInt(idx-1);
+                                    document.getElementById("filelist").scrollLeft = document.getElementById("filelist").scrollWidth;
+                                    myAsyncFunction(parseInt(idx-1));
+                                    scrolele.scrollLeft = scrolele.scrollWidth; 
+
+                                }                          
+                            }
+                    break;
+                    case "d":
+                        if(document.getElementById("filelist").options.length > 0){
+                            var labelarea = document.getElementsByClassName("store_label")[0];
+                            var labeldiv = 0;
+                            var idx = document.getElementById("filelist").selectedIndex;
+                            if(parseInt(idx) < document.getElementById("filelist").options.length ){
+                                    //Step1 . 載入下一張
+                                    
+                                    document.getElementById("filelist").selectedIndex = parseInt(idx+1);
+                                    myAsyncFunction(parseInt(idx+1));   
+                                    scrolele.scrollLeft = scrolele.scrollWidth; 
+                                  
+                                }
+                        }
+                            
+                            console.log("測試");
+                    break;
+                    case "ArrowLeft":
+                        console.log("ArrowLeft");
+                        break;
+                    case "ArrowRight":
+                        console.log("ArrowRight");
+                        break;
+                    default:
+                        console.log(event.key, event.keyCode);
+                        key_keep = event.key;
+                        console.log("顯示"+key_keep);
+                
+                    //document.getElementById("textId").value = key_keep;
+                    //return; 
+
+                }
+            }
+            }
+            //在表格中塞入資料表
+            function pushTable(newData){
+                // var newData = [
+                // { name: 'Alice', age: 22, country: 'UK',names: 'Alice', ages: 22, countrys: 'UK' },
+                // { name: 'Bob', age: 28, country: 'Australia',names: 'Alice', ages: 22, countrys: 'UK' },
+                // // 更多新的資料...
+                // ];
+                console.log(newData)
+                // 取得原本的 DataTable 物件
+                var myTable = $('#datatablesSimple2').DataTable();
+                // $('.dataTables_length').css("display","none")
+                // $('.dataTables_filter').css("display","none")
+                // $('#datatablesSimple2_info').css("display","none")
+                // $('#datatablesSimple2_paginate').css("display","none")
+                document.getElementsByClassName('datatable-top')[1].style.display = "none";
+                document.getElementsByClassName('datatable-bottom')[1].style.display = "none"
+
+                
+                // 清空原本的表格
+                myTable.clear().draw();
+
+                // 加入新的數據
+                newData.forEach(function (row) {
+                myTable.row.add([row.epcoh, row.loss,row.precision,row.recall, row.map05,row.map0595]).draw();
+                });
+            }
+            
+
+            function init () {
+
+                $("#batch_text").html($("#batch").val());
+                $("#batch").on("input", function(){ // 當輸入 input 時執行以下動作
+                    $("#batch_text").html($(this).val()); // 將本數值顯示在 #rangeTxt 上
+                });
+
+                $("#epoch_text").html($("#epoch").val());
+                $("#epoch").on("input", function(){ // 當輸入 input 時執行以下動作
+                    $("#epoch_text").html($(this).val()); // 將本數值顯示在 #rangeTxt 上
+                });
+
+                $("#Image_Size").html($("#Image_Size_text").val());
+                $("#Image_Size").on("input", function(){ // 當輸入 input 時執行以下動作
+                    $("#Image_Size_text").html($(this).val()); // 將本數值顯示在 #rangeTxt 上
+                });
+               
+
+                document.addEventListener("keydown", loge);
+
+                var parm = "{{urlguide}}" ;
+                console.log("參數: ",parm);
+                if(parm != ""){
+                    let urlParams = new URLSearchParams(window.location.search);
+                    if(urlParams.get('filepath') != parm){
+
+                        window.location.href=window.location.pathname+"?filepath="+parm;
+                        console.log(window.location.href+"?filepath="+parm);
+                    }
+                    
+                }
+                var ctx = document.getElementById("Precision");
+                var ctx2 = document.getElementById("MAP05");
+                var ctx3 = document.getElementById("MAP0595");
+                var ctx4 = document.getElementById("Loss");
+                Precision_Chart = new Chart(ctx,
+                {
+                type: 'line',
+                data: {
+                    labels: ["0"],
+                    datasets: [{
+                    label: "Precision",
+                    lineTension: 0.3,
+                    backgroundColor: "rgba(2,117,216,0.2)",
+                    borderColor: "rgba(2,117,216,1)",
+                    pointRadius: 5,
+                    pointBackgroundColor: "rgba(2,117,216,1)",
+                    pointBorderColor: "rgba(255,255,255,0.8)",
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: "rgba(2,117,216,1)",
+                    pointHitRadius: 50,
+                    pointBorderWidth: 2,
+                    data:["0"]
+                    }],
+                },
+                options: {
+                    scales: {
+                    xAxes: [{
+                        time: {
+                        unit: 'date'
+                        },
+                        gridLines: {
+                        display: false
+                        },
+                        ticks: {
+                        maxTicksLimit: 7
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                        min: 0,
+                        max: 1,
+                        maxTicksLimit: 5
+                        },
+                        gridLines: {
+                        color: "rgba(0, 0, 0, .125)",
+                        }
+                    }],
+                    },
+                    legend: {
+                    display: false
+                    }
+                }
+                });
+
+                MAP05_Chart = new Chart(ctx2,
+                {
+                type: 'line',
+                data: {
+                    labels: ["0"],
+                    datasets: [{
+                    label: "Map_0.5",
+                    lineTension: 0.3,
+                    backgroundColor: "rgba(2,117,216,0.2)",
+                    borderColor: "rgba(2,117,216,1)",
+                    pointRadius: 5,
+                    pointBackgroundColor: "rgba(2,117,216,1)",
+                    pointBorderColor: "rgba(255,255,255,0.8)",
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: "rgba(2,117,216,1)",
+                    pointHitRadius: 50,
+                    pointBorderWidth: 2,
+                    data:["0"]
+                    }],
+                },
+                options: {
+                    scales: {
+                    xAxes: [{
+                        time: {
+                        unit: 'date'
+                        },
+                        gridLines: {
+                        display: false
+                        },
+                        ticks: {
+                        maxTicksLimit: 7
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                        min: 0,
+                        max: 1,
+                        maxTicksLimit: 5
+                        },
+                        gridLines: {
+                        color: "rgba(0, 0, 0, .125)",
+                        }
+                    }],
+                    },
+                    legend: {
+                    display: false
+                    }
+                }
+                });
+                MAP0595_Chart = new Chart(ctx3,
+                {
+                type: 'line',
+                data: {
+                    labels: ["0"],
+                    datasets: [{
+                    label: "Map_0.5:0.95",
+                    lineTension: 0.3,
+                    backgroundColor: "rgba(2,117,216,0.2)",
+                    borderColor: "rgba(2,117,216,1)",
+                    pointRadius: 5,
+                    pointBackgroundColor: "rgba(2,117,216,1)",
+                    pointBorderColor: "rgba(255,255,255,0.8)",
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: "rgba(2,117,216,1)",
+                    pointHitRadius: 50,
+                    pointBorderWidth: 2,
+                    data:["0"]
+                    }],
+                },
+                options: {
+                    scales: {
+                    xAxes: [{
+                        time: {
+                        unit: 'date'
+                        },
+                        gridLines: {
+                        display: false
+                        },
+                        ticks: {
+                        maxTicksLimit: 7
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                        min: 0,
+                        max: 1,
+                        maxTicksLimit: 5
+                        },
+                        gridLines: {
+                        color: "rgba(0, 0, 0, .125)",
+                        }
+                    }],
+                    },
+                    legend: {
+                    display: false
+                    }
+                }
+                });
+                Loss_Chart = new Chart(ctx4,
+                {
+                type: 'line',
+                data: {
+                    labels: ["0"],
+                    datasets: [{
+                    label: "Loss",
+                    lineTension: 0.3,
+                    backgroundColor: "rgba(2,117,216,0.2)",
+                    borderColor: "rgba(2,117,216,1)",
+                    pointRadius: 5,
+                    pointBackgroundColor: "rgba(2,117,216,1)",
+                    pointBorderColor: "rgba(255,255,255,0.8)",
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: "rgba(2,117,216,1)",
+                    pointHitRadius: 50,
+                    pointBorderWidth: 2,
+                    data:["0"]
+                    }],
+                },
+                options: {
+                    scales: {
+                    xAxes: [{
+                        time: {
+                        unit: 'date'
+                        },
+                        gridLines: {
+                        display: false
+                        },
+                        ticks: {
+                        maxTicksLimit: 7
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                        min: 0,
+                        max: 0.1,
+                        maxTicksLimit: 5
+                        },
+                        gridLines: {
+                        color: "rgba(0, 0, 0, .125)",
+                        }
+                    }],
+                    },
+                    legend: {
+                    display: false
+                    }
+                }
+                });
+            }
+            
+            function getlist(val){
+                document.getElementById('label_class').querySelector('input').value = val.options[val.selectedIndex].text;     
+                
+            }
+            //file list
+            async function getlist2(val){
+          
+                myAsyncFunction(val.selectedIndex);
+                
+            }
+
+            
+            
+            function training_strat(){
+                var csrft = $("[name='csrfmiddlewaretoken']").val();
+                var timer_progress = 0;
+                document.getElementById('cmd-info').innerHTML = "";
+                
+                var model_check = "0";
+                console.log(model_check);
+                if(model_check == "1"){
+                    var yes = confirm("此資料集已存在訓練結果，是否要重新執行訓練?");
+
+                    if(!yes){
+                        return false;
+                    }
+                }
+                var progress_timer = setInterval(function() {
+                        console.log(timer_progress);
+                        $.ajax({
+                        url: "/training/progress",
+                        type: "GET",
+                        success: function(response) {
+                            console.log(response);
+                            console.log(response.status);
+                            if(response.status == "Fail"){
+                                document.getElementById('cmd-info').innerHTML += response.status+"<br/>";
+                                clearInterval(progress_timer);
+                            }
+                            // 更新訓練進度的顯示
+                            document.getElementById('progress').textContent = response.progress;
+                            document.getElementById('cmd-info').innerHTML += "模型訓練中，已完成。。。"+response.status+"<br/>";
+                            if(response.status == "100%"){
+                                clearInterval(progress_timer);
+                            }
+                            var element = document.getElementById("progress_space");
+                            element.scrollTop = element.scrollHeight;
+                        },
+                        error: function(xhr, status, error) {
+                            console.error(error);
+                        }
+
+                       
+                        });
+                        
+                    }, 1000); // 每秒獲取一次訓練進度
+                $.ajax({
+                    url:"training",
+                    type:"POST",
+                    contentType: "application/x-www-form-urlencoded;charset=UTF-8",
+                    //Django用法 Post接收contentType 使用x-www-form-urlencoded
+                    //一般使用 application/json;
+                    data:                   
+                    {   
+                       
+                        "filepath":window.location.search.substr(10),
+                        "batch": $('#batch').val(),
+                        "epoch": $('#epoch').val(),
+                        "ImageSize" : $("[name='imagesize']:checked").val(),
+                        "model" : $("[name='yolov5']:checked").val(),
+
+                        "csrfmiddlewaretoken":csrft,
+                                        
+                    }
+                    ,dataType: 'json',
+
+                        success: function(data){
+                        // console.log('ajax result:')
+                        console.log(data)
+                        if(data["status"] == '尚未進行標註，無法執行訓練'){
+                            document.getElementById('cmd-info').innerHTML += data["status"] ;
+                            clearInterval(progress_timer);
+                        }
+                        else{
+                            document.getElementById('cmd-info').innerHTML += "模型訓練完成 。 "+data["finish"]+"<br/>";
+                            if(data["unlabel"] != ""){
+                                document.getElementById('cmd-info').innerHTML += "尚有以下圖片 : <br/> <br/>"+data["unlabel"]+
+                                " <br/>未完成標註<br/>請在完成標註後重新訓練以達到更好的訓練結果";
+                            }
+                            var element = document.getElementById("progress_space");
+                                element.scrollTop = element.scrollHeight;
+                            clearInterval(progress_timer);
+                        }                     
+                    }
+                }).done(function(response) {
+                // 請求成功的處理
+                    console.log('請求成功:', response);
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    // 請求失敗的處理
+                    console.log('請求失敗:', textStatus, errorThrown);
+                    })
+
+            }
+            
+         
+          </script>
+
+          
+
+    </head>
+    <body class="sb-nav-fixed" onload="init()">
+
+{% csrf_token %}
+        <div id="label_class" style="display: none;position:absolute;z-index:1999;background-color: white;border:1px solid slategray;">
+            <div>
+                <div class="toast-header d-flex justify-content-between">
+                    <div class="d-flex justify-content-start">
+                        <strong class="mr-auto text-left">標註類別</strong>
+                    </div>
+                  
+                  <div class="d-flex justify-content-end">
+                    <button type="button" class="ml-2 mb-1 d-flex justify-content-end" onclick="check_no(this)" >
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  
+                </div>
+                <div class="toast-body">
+                    <div class="col-lg-12">
+                        <div class="input-group">
+                           
+                            <input type="text" class="form-control form-control-sm" id="class_by_keyword">
+
+                        </div><!-- /input-group -->
+                    </div>
+                    <div class="toast-header d-flex justify-content-between">
+                        <div class="d-flex justify-content-start">
+                            
+                        </div>
+                      
+                      <div class="col-lg-12 d-flex justify-content-end">
+                        <button type="button" class="btn btn-success btn-sm fs-6" onclick="check_pass(this)">OK</button>&nbsp;
+                        <button type="button" class="btn btn-danger btn-sm fs-6" onclick="check_no(this)">Cancel</button>
+                      </div>
+                      
+                    </div>
+                    <div class="col-lg-12">
+                        <select class="form-select" multiple aria-label="multiple select example" id="class_list" onchange="getlist(this)">
+                            <option selected>Kumquat</option>
+                            <option selected>Strawberry</option>
+
+                            <option selected>Banana</option>
+
+                            <option selected>Berry</option>
+
+                          
+                        </select>
+                    </div>
+                </div>
+              </div>
+        </div>
+
+        {{menu | safe}}
+        <div id="layoutSidenav">
+            <div id="layoutSidenav_nav">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                    <div class="sb-sidenav-menu">
+                        <div class="nav" >
+                            <a class="nav-link" href="index" >
+                                <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                                模型訓練
+                            </a>
+
+                            <table id="upd_tb">
+                                <!-- <tr><td><span>{{alert}}</span></td></tr> -->
+                              <form action="" enctype='multipart/form-data' method='POST' id="userForm">
+                                {% csrf_token %}
+                               
+                                <tr><td >
+                                    File list<br/><br/>
+                                    <select id="filelist" class="form-select" multiple aria-label="" style="position: relative;height:60vh;overflow: scroll;" onchange="getlist2(this)">
+
+
+                                        {% for i in dirs %}
+                                            <option value="3">{{i}}</option>
+                                        {% endfor %}
+
+                                    </select>
+                                </td></tr>
+
+
+                              </form>
+                            </table>
+
+                        </div>
+                    </div>
+                    <div class="sb-sidenav-footer">
+                        <div class="small">Logged in as:</div>
+                        {{user}}
+                    </div>
+                </nav>
+            </div>
+
+
+            <div id="layoutSidenav_content">
+                <main>
+
+
+
+
+                    <div class="container-fluid px-4">
+                        <h1 class="mt-4">{{obj_name}}</h1>
+<!--                        <ol class="breadcrumb mb-4">-->
+<!--                            <li class="breadcrumb-item active">Dashboard</li>-->
+<!--                        </ol>-->
+                        <div class="row">
+                            <div class="col-xl-12 ">
+                                <div class="card mb-4">
+                                    <div class="card-header" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                        <i class="fas fa-chart-bar me-1"></i>
+                                        資料夾
+                                    </div>
+
+                                     <div class="card-body collapse" id="collapseExample">
+                                <table id="datatablesSimple" >
+                                    <thead>
+                                        <tr>
+                                            <th>資料夾名稱</th>
+                                            <th>建立時間</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            <th>資料夾名稱</th>
+                                            <th>建立時間</th>
+
+                                        </tr>
+                                    </tfoot>
+                                    <tbody>
+                                         {% for a in file_dir %}
+                                               <tr>
+                                                    <td><a href="ModelView?filepath={{a.0}}">{{a.0}}</a></td>
+                                                    <td>{{a.1}}</td>
+                                                </tr>
+                                        {% endfor %}
+
+                                    </tbody>
+                                </table>
+                            </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="card mb-4 label_panel">
+                            <div class="card-header">
+                                <i class="fas fa-table me-1"></i>
+                                模行預測結果檢視
+                            </div>
+                            <div class="card-body" >
+                                    <div class="row">
+                                        <div class="col-md-6"  style="text-align: center;">
+                                            標註
+                                            <img id="ground" src="" style="text-align: center;" width="100%">
+                                        </div>
+                                        <div class="col-md-6"  style="text-align: center;">
+                                            預測
+                                            <img id="predict" src="" style="text-align: center;" width="100%">
+                                        </div>
+                                    </div>
+                            </div>
+
+                            
+                        </div>
+                        <div class="row">
+                            <div class="col-xl-6">
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <i class="fas fa-chart-area me-1"></i>
+                                        Precision Chart 
+                                    </div>
+                                    <div class="card-body"><canvas id="Precision" width="100%" height="40"></canvas></div>
+                                </div>
+                            </div>
+                            <div class="col-xl-6">
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <i class="fas fa-chart-area me-1"></i>
+                                        MAP_0.5 Chart 
+                                    </div>
+                                    <div class="card-body"><canvas id="MAP05" width="100%" height="40"></canvas></div>
+                                </div>
+                            </div>
+                            <div class="col-xl-6">
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <i class="fas fa-chart-area me-1"></i>
+                                        MAP_0.5:0.95 Chart 
+                                    </div>
+                                    <div class="card-body"><canvas id="MAP0595" width="100%" height="40"></canvas></div>
+                                </div>
+                            </div>
+                            <div class="col-xl-6">
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <i class="fas fa-chart-area me-1"></i>
+                                        Loss Chart 
+                                    </div>
+                                    <div class="card-body"><canvas id="Loss" width="100%" height="40"></canvas></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-table me-1"></i>
+                                Training Result
+                            </div>
+                            <div class="card-body" style="overflow-y: scroll;" >
+                                <table id="datatablesSimple2" style="overflow-y: scroll;" >
+                                    <thead>
+                                        <tr>
+                                            <th>epoch</th>
+                                            <th>train loss</th>
+                                            <th>metrics/precision</th>
+                                            <th>metrics/recall</th>
+                                            <th>metrics/mAP_0.5</th>
+                                            <th>metrics/mAP_0.5:0.95</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            <th>epoch</th>
+                                            <th>train loss</th>
+                                            <th>metrics/precision</th>
+                                            <th>metrics/recall</th>
+                                            <th>metrics/mAP_0.5</th>
+                                            <th>metrics/mAP_0.5:0.95</th>
+                                          
+                                        </tr>
+                                    </tfoot>
+                                    <tbody>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                           
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </main>
+                <footer class="py-4 bg-light mt-auto">
+                    <div class="container-fluid px-4">
+                        <div class="d-flex align-items-center justify-content-between small">
+                            <div class="text-muted">Copyright &copy; Your Website 2022</div>
+                            <div>
+<!--                                <a href="#">Privacy Policy</a>-->
+<!--                                &middot-->
+<!--                                <a href="#">Terms &amp; Conditions</a>-->
+                            </div>
+                        </div>
+                    </div>
+
+
+                </footer>
+            </div>
+        </div>
+        <script src="static/js/scripts.js"></script>
+        <script src="static/js/datatables-simple-demo.js"></script>
+        <script src="static/js/Chart.min.js" crossorigin="anonymous"></script>
+        <script src="static/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="static/js/simple-datatables@latest.js" ></script>
+
+    </body>
+
+   
+
+
+    
+</html>

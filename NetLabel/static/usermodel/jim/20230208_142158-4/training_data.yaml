@@ -1,0 +1,5 @@
+path: ../userdata/jim
+train: 20230208_142158-4/images
+val: 20230208_142158-4/images
+nc: 0
+names: ]

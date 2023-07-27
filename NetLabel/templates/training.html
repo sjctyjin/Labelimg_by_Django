@@ -12,16 +12,6 @@
         <link href="static/css/styles.css" rel="stylesheet" />
         <link href="static/css/table_style.css" rel="stylesheet" />
 
-       
-
-
-         <!-- <link href="static/bootstrap.min.css" rel="stylesheet" /> -->
-        <!-- <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">   -->
-        <!-- <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script> -->
-        <!-- <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script> -->
-<!--         <script src="static/bootstrap.min.js"></script>-->
-        <!-- <script src="static/jquery-3.4.1.js"></script>
-        <script src="static/jquery-3.4.1.min.js"></script> -->
         <script src="static/js/all.js" crossorigin="anonymous"></script>
         <link href="static/js/jquery-ui.css" rel="stylesheet" />
         <script src="static/js/jquery.js"></script>
@@ -285,8 +275,10 @@
                 $("#Image_Size").on("input", function(){ // 當輸入 input 時執行以下動作
                     $("#Image_Size_text").html($(this).val()); // 將本數值顯示在 #rangeTxt 上
                 });
-                
-                
+               
+                $('#datatablesSimple').DataTable({
+                    "order": [[ 1, "desc" ]]
+                });
 
                 var parm = "{{urlguide}}" ;
                 console.log("參數: ",parm);
@@ -598,6 +590,16 @@
                 var csrft = $("[name='csrfmiddlewaretoken']").val();
                 var timer_progress = 0;
                 document.getElementById('cmd-info').innerHTML = "";
+                
+                var model_check = "{{check_model}}";
+                console.log(model_check);
+                if(model_check == "1"){
+                    var yes = confirm("此資料集已存在訓練結果，是否要重新執行訓練?");
+
+                    if(!yes){
+                        return false;
+                    }
+                }
                 var progress_timer = setInterval(function() {
                         console.log(timer_progress);
                         $.ajax({
@@ -606,10 +608,18 @@
                         success: function(response) {
                             console.log(response);
                             console.log(response.status);
+                            if(response.status == "Fail"){
+                                document.getElementById('cmd-info').innerHTML += response.status+"<br/>";
+                                clearInterval(progress_timer);
+                            }
                             // 更新訓練進度的顯示
                             document.getElementById('progress').textContent = response.progress;
-                            document.getElementById('cmd-info').innerHTML += response.status+"<br/>";
-
+                            document.getElementById('cmd-info').innerHTML += "模型訓練中，已完成。。。"+response.status+"<br/>";
+                            if(response.status == "100%"){
+                                clearInterval(progress_timer);
+                            }
+                            var element = document.getElementById("progress_space");
+                            element.scrollTop = element.scrollHeight;
                         },
                         error: function(xhr, status, error) {
                             console.error(error);
@@ -617,13 +627,7 @@
 
                        
                         });
-                        if(timer_progress > 10){
-                            clearInterval(progress_timer);
                         
-                        }
-                        else{
-                            timer_progress ++;
-                        }
                     }, 1000); // 每秒獲取一次訓練進度
                 $.ajax({
                     url:"training",
@@ -648,16 +652,32 @@
                         success: function(data){
                         // console.log('ajax result:')
                         console.log(data)
-                        clearInterval(progress_timer);
-                        //alert('新增成功');
+                        if(data["status"] == '尚未進行標註，無法執行訓練'){
+                            document.getElementById('cmd-info').innerHTML += data["status"] ;
+                            clearInterval(progress_timer);
+                        }
+                        else{
+                            document.getElementById('cmd-info').innerHTML += "模型訓練完成 。 "+data["finish"]+"<br/>請至模型檢視查看訓練結果";
+                            if(data["unlabel"] != ""){
+                                document.getElementById('cmd-info').innerHTML += "尚有以下圖片 : <br/> <br/>"+data["unlabel"]+
+                                " <br/>未完成標註<br/>請在完成標註後重新訓練以達到更好的訓練結果";
+                            }
+                            var element = document.getElementById("progress_space");
+                                element.scrollTop = element.scrollHeight;
+                            clearInterval(progress_timer);
+                        }                     
                     }
-                })
+                }).done(function(response) {
+                // 請求成功的處理
+                    console.log('請求成功:', response);
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    // 請求失敗的處理
+                    console.log('請求失敗:', textStatus, errorThrown);
+                    })
 
             }
-            function updateTrainingProgress(progress) {
-                // 將訓練進度信息顯示在網頁上的相應元素中
-              
-            }
+            
+         
           </script>
 
           
@@ -720,39 +740,20 @@
             <div id="layoutSidenav_nav">
                 <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                     <div class="sb-sidenav-menu">
-                        <div class="nav">
-                            <a class="nav-link" href="index">
+                        <div class="nav" >
+                            <a class="nav-link" href="index" >
                                 <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                                 模型訓練
                             </a>
 
                             <table id="upd_tb">
                                 <!-- <tr><td><span>{{alert}}</span></td></tr> -->
-                                <tr><td style="border-top-left-radius: 0px;border-top-right-radius: 0px; background-image: linear-gradient(to top, #FFC78E		, #FFA042	);">選擇檔案</td></tr>
                               <form action="" enctype='multipart/form-data' method='POST' id="userForm">
                                 {% csrf_token %}
-                                <tr><td>
-
-                    <label class="btn btn-info btn-sm" onchange="funs()"  style="font-size: 2vmin;">
-                                  <input type="file" name="file[]" id="updfiles" style="display:none;" accept=".jpg,.jpeg,.png,.jfif,.HEIC,.mp4,.wmv,.flv,.mov,.avi" multiple>
-                                  <i class="fa fa-photo"></i> 選擇圖片
-                    </label><span id="imgs"></span>
-                    <label class="btn btn-info btn-sm" style="font-size: 2vmin;">
-                        <input type="button" style="display: none;font-size: 2vmin;" onclick="check()" value="上傳至電腦" name="upload">
-                        <i class="fa fa-photo"></i> 上傳
-                      </label>
-                      <div id="dir_name" style="background-color:linear-gradient(to top,#FFC78E,#FFA042);display:none">
-                            資料夾名稱 : <input type="text" id="data_set_name" name="dataset" value="">
-                      </div>
-                      <p id="filecount"></p>
-
-
-                                </td>
-
-                                <tr><td><input type="hidden" id="foldername" name="foldername" value=""></td></tr>
-                                <tr><td>
-                                    File list
-                                    <select id="filelist" class="form-select" multiple aria-label="" style="overflow: scroll;" onchange="getlist2(this)">
+                               
+                                <tr><td >
+                                    File list<br/><br/>
+                                    <select id="filelist" class="form-select" multiple aria-label="" style="position: relative;height:60vh;overflow: scroll;" onchange="getlist2(this)">
 
 
                                         {% for i in dirs %}
@@ -837,12 +838,13 @@
 
                                 <div id="imgarea" style="border:3px solid;display: block;" >
                                     <img id="label_img" style="display: none;" >
-
                                     <canvas id="pCanvas"  ></canvas>
                                 </div>
+                               
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <div style="margin-left: 5%;" style="width: 100%;">
+                                        <div style="margin-left: 0%;" style="width: 100%;">
+                                            
                                             <div class="form-check" style="width: 100%;">
                                                 <label class="form-check-label" for="batch">
                                                     Batch Size &nbsp;:&nbsp;&nbsp;<span id="batch_text"></span>
@@ -852,7 +854,7 @@
                                                 
                                             </div>
                                         </div>
-                                        <div style="margin-left: 5%;" style="width: 100%;">
+                                        <div style="margin-left: 0%;" style="width: 100%;">
                                             <div class="form-check" style="width: 100%;">
                                                 <label class="form-check-label" for="epoch">
                                                     Epoch  &nbsp;:&nbsp;&nbsp;<span id="epoch_text"></span>
@@ -862,7 +864,7 @@
                                                 
                                             </div>
                                         </div>
-                                        <div style="margin-left: 5%;" style="width: 100%;">
+                                        <div style="margin-left: 0%;" style="width: 100%;">
                                             <div class="form-check" style="width: 100%;">
                                                 <label class="form-check-label" for="Image_Size">
                                                     Image Size  &nbsp;:&nbsp;&nbsp;<span id="Image_Size_text"></span>
@@ -871,7 +873,7 @@
     
                                                 <div class="funkyradio">
                                                     <div class="funkyradio-default">
-                                                        <input type="radio" name="imagesize" id="size416" value="416" checked/>
+                                                        <input type="radio" name="imagesize" id="size416" value="416"  checked/>
                                                         <label for="size416">416x416</label>
                                                     </div>
                                                     <div class="funkyradio-default">
@@ -889,7 +891,7 @@
                                             </div>
                                            
                                         </div>
-                                        <div style="margin-left: 5%;" style="width: 100%;">
+                                        <div style="margin-left: 0%;" style="width: 100%;">
                                             <div class="form-check" style="width: 100%;">
                                                 <label class="form-check-label" for="Image_Size">
                                                     CFG  &nbsp;:&nbsp;&nbsp;<span id="cfg_text"></span>
@@ -920,16 +922,17 @@
                                             </div>
                                         </div>
     
-                                        <div style="margin-left: 5%;width: 50%;margin-top: 20px;">
+                                        <div style="margin-left: 0%;width: 50%;margin-top: 20px;">
                                             <div class="form-check" style="width: 50%;">
                                                 <input class="btn btn-primary btn-sm" type="button" style="font-size: 12pt;" value="Training" onclick="training_strat()">
                                                 <span id="progress"></span>
                                             </div>
+                                            <br/>
                                         </div>
                                     </div>
-                                    <div class="col-md-6" style="border: 1px solid;background-color: black;padding:10px;">
-                                        <div style="margin-left: 2%;" style="width: 100%;border: 1px solid;background-color: teal;">
-                                                <span id="cmd-info" style="color:lightgreen;">user@linux~: ls </span>
+                                    <div id=progress_space class="col-md-6" style="border: 1px solid;background-color: black;padding:10px;overflow-y: scroll;height: 60vh;flex-direction: column-reverse;">
+                                        <div  style="margin-left: 2%;" style="width: 100%;border: 1px solid;background-color: teal">
+                                                <span id="cmd-info" style="color:lightgreen;">Waitting for training... </span>
                                         </div>
                                     </div>
                                 </div>
