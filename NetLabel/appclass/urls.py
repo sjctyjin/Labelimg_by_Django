@@ -2,6 +2,7 @@ from django.urls import path
 from .views import *
 urlpatterns = [
     path('index',Message.as_view(),name='index'),
+    path('speedlabeling',Message.speedLabel,name='speedlabeling'),
     path('list',Label_List.addtest),
     path('classname',Label_List.add_class),
     path('read',Label_List.readtest),

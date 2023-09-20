@@ -1,0 +1,27 @@
+
+                                      <annotation>
+                                          <folder>images</folder>
+                                          <filename>182.jpg</filename>
+                                          <path>static/userdata/jim/20230825_080328-cucumber_5_Maturity/images/182.jpg</path>
+                                          <source>
+                                              <database>Unknown</database>
+                                          </source>
+                                          <size>
+                                              <width>614</width>
+                                              <height>819</height>
+                                              <depth>3</depth>
+                                          </size>
+                                          <segmented>0</segmented>
+                                      <object>
+                                                    <name>mature</name>
+                                                    <pose>Unspecified</pose>
+                                                    <truncated>0</truncated>
+                                                    <difficult>0</difficult>
+                                                    <bndbox>
+                                                        <xmin>293</xmin>
+                                                        <ymin>191</ymin>
+                                                        <xmax>493</xmax>
+                                                        <ymax>435</ymax>
+                                                    </bndbox>
+                                                </object>
+                                                </annotation>

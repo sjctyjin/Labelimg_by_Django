@@ -1,0 +1,27 @@
+
+                                      <annotation>
+                                          <folder>images</folder>
+                                          <filename>8.jpg</filename>
+                                          <path>static/userdata/jim/20230824_112538-cucumber_5_Maturity/images/8.jpg</path>
+                                          <source>
+                                              <database>Unknown</database>
+                                          </source>
+                                          <size>
+                                              <width>859</width>
+                                              <height>1146</height>
+                                              <depth>3</depth>
+                                          </size>
+                                          <segmented>0</segmented>
+                                      <object>
+                                                    <name>bud</name>
+                                                    <pose>Unspecified</pose>
+                                                    <truncated>0</truncated>
+                                                    <difficult>0</difficult>
+                                                    <bndbox>
+                                                        <xmin>236</xmin>
+                                                        <ymin>17</ymin>
+                                                        <xmax>437</xmax>
+                                                        <ymax>290</ymax>
+                                                    </bndbox>
+                                                </object>
+                                                </annotation>

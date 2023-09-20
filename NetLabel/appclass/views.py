@@ -16,6 +16,8 @@ import yaml
 import pymssql
 from appclass.models import Training_cycle
 from datetime import datetime
+import torch
+from urllib.parse import unquote#將中文URL編碼轉回中文
 # Create your views here.
 
 
@@ -60,6 +62,8 @@ menu_bar = f"""
 
 decoded_str = "模型訓練中"
 
+
+
 class Message(View):
     global menu_bar
 
@@ -86,7 +90,7 @@ class Message(View):
                              border-radius:15px;
                              background-color:#FFB5B5;
                              color:#FF2D2D;
-                             font-size;5vmin;text-align:center;">
+                             font-size:5vmin;text-align:center;">
                                無權操作，請先登入<br/>
                               </div>
                               <script>setTimeout("location.href='login'",2000);</script>""")
@@ -129,7 +133,8 @@ class Message(View):
                     min = fidir.split('-')[0].split('_')[1][2:4]
                     s = fidir.split('-')[0].split('_')[1][4:6]
                     user_dirs.append([fidir,f'{y}-{m}-{d} {h}:{min}:{s}'])
-                return render(request,'index.html',{'dirs':dirs,'user':user_name,'obj_name':name.split('-')[1],'file_dir':user_dirs,'tags':tags,'menu':menu_bar})
+
+                return render(request,'index.html',{'dirs':dirs,'user':user_name,'obj_name':name.split('-')[1],'file_dir':user_dirs,'tags':tags,'menu':menu_bar,'dirslen':len(dirs)})
             except:
                 print(traceback.format_exc())
 
@@ -181,7 +186,7 @@ class Message(View):
             f.write('')
         count_img = 0
         for files in file_up:
-            
+
             save_paths = os.path.join(save_path,f'{count_img}.jpg').replace("\\","/")
             with open(save_paths,'wb') as f:
                 for content in files.chunks():
@@ -193,13 +198,14 @@ class Message(View):
             #若檔案超過1000px x 1000px 則 resize
             try:
                 img = Image.open(save_paths)
+                img = exif_transpose(img)
                 img = img.convert("RGB")
                 dd = img.size
                 if 4000000 > dd[0]*dd[1] > 999000:
-                    cropped = img.resize((int(dd[0]*0.5),int(dd[1]*0.5)))
+                    cropped = img.resize((int(dd[0]*0.4),int(dd[1]*0.4)))
                     cropped.save(save_paths)
                 elif dd[0]*dd[1] > 4000001:
-                    cropped = img.resize((int(dd[0] * 0.3), int(dd[1] * 0.3)))
+                    cropped = img.resize((int(dd[0] * 0.2), int(dd[1] * 0.2)))
                     cropped.save(save_paths)
             except:
                 print(traceback.format_exc())
@@ -217,9 +223,195 @@ class Message(View):
 
         return render(request,'index.html',{'dirs':dirs,"urlguide":f"{now}-{file_name}",'obj_name':file_name,'file_dir':user_dirs,'tags':[]})
 
+    @csrf_exempt
+    # 標註圖片上傳,上傳
+    def speedLabel(request):
+        if request.method != 'POST':
+            # 判斷當前用戶是否已登入
+            if not request.user.is_authenticated:
+                return render(request, 'please_login.html')
+            else:
+                return HttpResponse('我是post请求')
+
+        image_path = request.POST.get("filepath")
+        filename = request.POST.get("filename")
+        username = request.user
+        imgpath = f"static/userdata/{username}/{filename}/images/"
+        modelpath = f"static/usermodel/{username}/{filename}"
+        modellist = []
+        modeldict = {}#當有該名稱模型有多個日期資料夾存在時
+        #點擊快速自動標註
+        if request.POST.get("mode") == "select":
+            # modelpath = ""
+            modelpath = []
+            #查看usermodel中是否有同名model，如果有則加入路徑
+            checkmodel = 0
+            #查看是否已存在標註檔
+            checklabeled = 0
+            print(f"{settings.MEDIA_ROOT[0]}/usermodel/{username}")
+            for i in os.listdir(f"{settings.MEDIA_ROOT[0]}/usermodel/{username}"):
+                if i.split('-')[1] == filename.split('-')[1]:
+                    print("模型",i)
+                    checkmodel = 1
+                    modelpath.append(f"usermodel/{username}/{i}")
+                    print("確認存在模型路徑:",i.split('-')[1])
+            if modelpath != []:
+                for m in modelpath:
+                    modellist = []
+                    for i in os.listdir(f"{settings.MEDIA_ROOT[0]}/{m}".replace("\\","/")):
+                        print(i)
+                        if len(i.split('.')) == 1:
+                            print(i)
+                            modellist.append(i)
+                    modeldict[m] = modellist
+            print(unquote("{0}\{1}labels_xml".format(settings.MEDIA_ROOT[0], imgpath[7:-7])))
+            if Path(unquote("{0}\{1}labels_xml".format(settings.MEDIA_ROOT[0],imgpath[7:-7]))).exists():
+                for b in os.listdir(unquote("{0}\{1}labels_xml".format(settings.MEDIA_ROOT[0],imgpath[7:-7]))):
+                    checklabeled = 1
+            print("模型 日期 :",modelpath)
+            #若當日模型訓練數量超過1個時，需排序
+            print(sorted(modellist,key=len))
+            """TODO : 把模型路徑導正，前端網頁加入一個模型選項，選擇使用哪個模型做快速標註"""
+
+            return JsonResponse({'status':modeldict,'labeled':checklabeled})
+        #送出開始自動標註
+        else:
+            model = request.POST.get('modelname')
+            modelpaths = request.POST.get('modelpath')
+            print("模型 ",model)
+            print("模型路徑",modelpaths)
+            checkpt = 0
+            if model == "":
+                return JsonResponse({'status': "no data"})
+
+            # for i in os.listdir(f"{settings.MEDIA_ROOT[0]}/usermodel/{username}"):
+            #     if i.split('-')[1] == filename.split('-')[1]:
+            #         modelpath = f"static/usermodel/{username}/{i}"
+            try:
+                for pt in os.listdir(f"{settings.MEDIA_ROOT[0]}/{modelpaths}/{model}/weights".replace("\\","/")):
+                    if pt.split('.')[1] == "pt":
+                        checkpt = 1 #確認是否存在模型
+                if checkpt == 0:
+                    return JsonResponse({'status': "no data"})
+            except:
+                return JsonResponse({'status': "no data"})
+            print(f"調用模型 : {modelpaths}/{model}")
+            model = torch.hub.load('static/yolov5', 'custom',
+                                   path=f'static/{modelpaths}/{model}/weights/best.pt',
+                                   source='local')
+            label_class = {}#存放類別的classes.txt
+
+            for img in os.listdir(imgpath):#遍歷每一張圖片
+
+
+                frame = cv2.imread(f'{imgpath}/{img}')
+                YOLO_Format = ""
+                xml_content = f"""
+                                      <annotation>
+                                          <folder>images</folder>
+                                          <filename>{img}</filename>
+                                          <path>{imgpath}{img}</path>
+                                          <source>
+                                              <database>Unknown</database>
+                                          </source>
+                                          <size>
+                                              <width>{frame.shape[1]}</width>
+                                              <height>{frame.shape[0]}</height>
+                                              <depth>3</depth>
+                                          </size>
+                                          <segmented>0</segmented>
+                                      """
+
+                start = time.time()
+                results = model(frame)
+                if len(results.pandas().xyxy[0]) > 0:
+
+                    for resultI in range(len(results.pandas().xyxy[0])):
+
+                        x = int(results.pandas().xyxy[0]["xmin"][resultI])
+                        y = int(results.pandas().xyxy[0]["ymin"][resultI])
+                        w = int(results.pandas().xyxy[0]["xmax"][resultI])
+                        h = int(results.pandas().xyxy[0]["ymax"][resultI])
+                        confi = int(results.pandas().xyxy[0]["confidence"][resultI] * 100)
+                        names_label = results.pandas().xyxy[0]["name"][resultI]
+                        label_class[results.pandas().xyxy[0]["class"][resultI]] = names_label
+
+                        # print(x,y)
+                        # print(h,w)
+                        if confi > 10:
+
+                            cv2.rectangle(frame, (x, y), (w, h), (0, 255, 0), 5)
+                            font = cv2.FONT_HERSHEY_COMPLEX
+                            cv2.putText(frame, f'{names_label}_{confi}%', (x + 10, y + 10), font, 1, (255, 255, 255), 1,
+                                        cv2.LINE_AA)
+                            cv2.putText(frame, f'X : {int((w + x) / 2)},Y:{int((y + h) / 2)}',
+                                        (int((w + x) / 2) + 10, int((y + h) / 2) + 10), font, 1, (255, 255, 255), 1,
+                                        cv2.LINE_AA)
+                            xml_content += f"""<object>
+                                                    <name>{names_label}</name>
+                                                    <pose>Unspecified</pose>
+                                                    <truncated>0</truncated>
+                                                    <difficult>0</difficult>
+                                                    <bndbox>
+                                                        <xmin>{x}</xmin>
+                                                        <ymin>{y}</ymin>
+                                                        <xmax>{w}</xmax>
+                                                        <ymax>{h}</ymax>
+                                                    </bndbox>
+                                                </object>
+                                                """
+
+                            ymin, xmin, ymax, xmax, image_w, image_h = [y, x,
+                                                                        h, w,
+                                                                        frame.shape[1],
+                                                                        frame.shape[0]]
+                            (x_iw_ratio, y_ih_ratio) = (
+                                ((xmin + xmax) * 0.5) / image_w, ((ymin + ymax) * 0.5) / image_h)
+                            tw_iw_ratio = (xmax - xmin) * 1. / image_w
+                            th_ih_ratio = (ymax - ymin) * 1. / image_h
+                            YOLO_Format += f"""{results.pandas().xyxy[0]["class"][resultI]} {round(x_iw_ratio, 6)} {round(y_ih_ratio, 6)} {round(tw_iw_ratio, 6)} {round(th_ih_ratio, 6)}\n"""
+
+                    xml_content += "</annotation>"
+                    save_path = f"{settings.MEDIA_ROOT[0]}{imgpath[6:-7]}labels/".replace('\\','/')
+                    save_path_xml = f"{settings.MEDIA_ROOT[0]}{imgpath[6:-7]}labels_xml/".replace('\\','/')
+
+                    # print(save_path)
+                    # print(save_path_xml)
+                    if not Path(save_path).exists():
+                        Path(save_path).mkdir(parents=True, exist_ok=True)
+                    if not Path(save_path_xml).exists():
+                        Path(save_path_xml).mkdir(parents=True, exist_ok=True)
+
+
+                    save_paths1 = os.path.join(save_path_xml, f"{img.split('.')[0]}.xml").replace("\\", "/")
+                    # print(save_paths1)
+                    with open(save_paths1, 'wt') as f:
+                        f.write(xml_content)
+                    #
+                    save_paths2 = os.path.join(save_path, f"{img.split('.')[0]}.txt").replace("\\","/")
+                    # print(save_paths2)
+                    with open(save_paths2, 'wt') as f:
+                        f.write(YOLO_Format)  # return HttpResponse(f'{file_path}')
+                    classfile = os.path.join(save_path[:-7], f"classes.txt").replace("\\","/")
+                    classtexts = ""
+                    for cls in range(len(label_class)):
+                        # print(sorted(label_class.items())[cls][1])#列出標註物的排序
+                        classtexts += f"{sorted(label_class.items())[cls][1]}\n"
+                    with open(classfile, 'wt') as f:
+                        f.write(classtexts)
+                else:
+                    print("NO Labeling")
+
+                # print("第",img,"張圖片 ================================================")
+                # print(YOLO_Format)
+                # print(xml_content)
+                # print(label_class)
+
+            return JsonResponse({'status': "成功"})
+
 #影像標註框
 class Label_List(View):
-    
+
     def get(self,request):
         print(dir(request))
         return HttpResponse('test')
@@ -248,7 +440,7 @@ class Label_List(View):
         # print(label_list_classname)
 
         labe_list_inPython = []
-        coun_list = 0 
+        coun_list = 0
         little_matrix = []
 
 
@@ -307,10 +499,10 @@ class Label_List(View):
                     tw_iw_ratio = (xmax - xmin) * 1. / image_w
                     th_ih_ratio = (ymax - ymin) * 1. / image_h
                     YOLO_Format +=f"""{li} {round(x_iw_ratio,6)} {round(y_ih_ratio,6)} {round(tw_iw_ratio,6)} {round(th_ih_ratio,6)}\n"""
-                
+
         xml_content += "</annotation>"
-        
-        
+
+
         # print("XML : ")
         # print(xml_content)
         # print("YOLO Format : ")
@@ -364,6 +556,7 @@ class Label_List(View):
         with open(file_up, 'r', encoding='GBK') as file:
             tree = ET.parse(file)
         root = tree.getroot()
+        print(file_up)
 
 
         lbl = []
@@ -380,7 +573,9 @@ class Label_List(View):
                 w =  int(xmax) - int(xmin)
                 lbl.append([labn,xmin,ymin,xmax,ymax,h,w])
 
-        print(lbl)
+        # print(lbl)
+        for lb in lbl :
+            print(lb)
         data = {
             'data':lbl,
         }
@@ -405,7 +600,7 @@ class Label_List(View):
             'data': '123',
         }
         return JsonResponse(data)
- 
+
     # return render(request, "login_ajax.html")
     def now(self):
         return str(int(time.time()))
@@ -437,7 +632,7 @@ class Model_Training(View):
                                  border-radius:15px;
                                  background-color:#FFB5B5;
                                  color:#FF2D2D;
-                                 font-size;5vmin;text-align:center;">
+                                 font-size:5vmin;text-align:center;">
                                    無權操作，請先登入<br/>
                                   </div>
                                   <script>setTimeout("location.href='login'",2000);</script>""")
@@ -490,15 +685,17 @@ class Model_Training(View):
                         Path(f"{settings.MEDIA_ROOT[0]}/{model_path}").mkdir(parents=True, exist_ok=True)
                     else:
                         print("HERE")
+
                         for fidir in os.listdir(f"{settings.MEDIA_ROOT[0]}/{model_path}"):
                             if os.path.isdir(os.path.join(f"{settings.MEDIA_ROOT[0]}/{model_path}", fidir)):
                                 print(fidir)
                                 model_check = 1#若發現資料夾，表示已執行過訓練
                             else:
                                 print("不是資料夾")
+                        # print(len(dirs))
                     return render(request, 'training.html',
                                   {'dirs': dirs, 'user': user_name, 'obj_name': name.split('-')[1],
-                                   'file_dir': user_dirs, 'tags': tags, 'menu': menu_bar,'check_model':model_check})
+                                   'file_dir': user_dirs, 'tags': tags, 'menu': menu_bar,'check_model':model_check,'dirslen':len(dirs)})
                 except:
                     print(traceback.format_exc())
 
@@ -522,7 +719,8 @@ class Model_Training(View):
                     min = fidir.split('-')[0].split('_')[1][2:4]
                     s = fidir.split('-')[0].split('_')[1][4:6]
                     user_dirs.append([fidir, f'{y}-{m}-{d} {h}:{min}:{s}'])
-                return render(request, 'training.html', {'user': user_name, 'file_dir': user_dirs, 'menu': menu_bar})
+
+                return render(request, 'training.html', {'user': user_name, 'file_dir': user_dirs, 'menu': menu_bar,'dirslen':""})
             # return render(request, 'training.html', {'user': user_name, 'menu': menu_bar})
         def post(self, request):
 
@@ -656,7 +854,7 @@ class Data_Augmentation(View):
                              border-radius:15px;
                              background-color:#FFB5B5;
                              color:#FF2D2D;
-                             font-size;5vmin;text-align:center;">
+                             font-size:5vmin;text-align:center;">
                                無權操作，請先登入<br/>
                               </div>
                               <script>setTimeout("location.href='login'",2000);</script>""")
@@ -760,15 +958,29 @@ class Data_Augmentation(View):
             # Article.objects.create(thunmbnial=files)
             # 若檔案超過1000px x 1000px 則 resize
             try:
+                #根據手機exif資訊調整
+
                 img = Image.open(save_paths)
+                img = exif_transpose(img)
                 img = img.convert("RGB")
                 dd = img.size
+
+
+
                 if 4000000 > dd[0] * dd[1] > 999000:
-                    cropped = img.resize((int(dd[0] * 0.5), int(dd[1] * 0.5)))
+                    cropped = img.resize((int(dd[0] * 0.4), int(dd[1] * 0.4)))
                     cropped.save(save_paths)
                 elif dd[0] * dd[1] > 4000001:
-                    cropped = img.resize((int(dd[0] * 0.3), int(dd[1] * 0.3)))
+                    cropped = img.resize((int(dd[0] * 0.2), int(dd[1] * 0.2)))
                     cropped.save(save_paths)
+                # img = cv2.imread(save_paths)
+                # dd = img.shape[:2]
+                # if 4000000 > dd[0] * dd[1] > 999000:
+                #     cropped = cv2.resize(img, (int(dd[1] * 0.5), int(dd[0] * 0.5)), interpolation=cv2.INTER_AREA)
+                #     cv2.imwrite(save_paths)
+                # elif dd[0] * dd[1] > 4000001:
+                #     cropped = cv2.resize(img, (int(dd[1] * 0.5), int(dd[0] * 0.5)), interpolation=cv2.INTER_AREA)
+                #     cv2.imwrite(save_paths)
             except:
                 print(traceback.format_exc())
 
@@ -844,7 +1056,7 @@ class Data_Augmentation(View):
                                  border-radius:15px;
                                  background-color:#FFB5B5;
                                  color:#FF2D2D;
-                                 font-size;5vmin;text-align:center;">
+                                 font-size:5vmin;text-align:center;">
                                    無權操作，請先登入<br/>
                                   </div>
                                   <script>setTimeout("location.href='login'",2000);</script>""")
@@ -972,7 +1184,7 @@ class Model_Examine(View):
                              border-radius:15px;
                              background-color:#FFB5B5;
                              color:#FF2D2D;
-                             font-size;5vmin;text-align:center;">
+                             font-size:5vmin;text-align:center;">
                                無權操作，請先登入<br/>
                               </div>
                               <script>setTimeout("location.href='login'",2000);</script>""")
@@ -1160,3 +1372,44 @@ def extract_datetime(folder_name):
     minute = int(time_str[2:4])
     second = int(time_str[4:6])
     return (year, month, day, hour, minute, second)
+
+#依據相片EXIF資訊修正方位
+def exif_transpose(img):
+    if not img:
+        return img
+
+    exif_orientation_tag = 274
+
+    # Check for EXIF data (only present on some files)
+    if hasattr(img, "_getexif") and isinstance(img._getexif(),
+                                               dict) and exif_orientation_tag in img._getexif():
+        exif_data = img._getexif()
+        orientation = exif_data[exif_orientation_tag]
+
+        # Handle EXIF Orientation
+        if orientation == 1:
+            # Normal image - nothing to do!
+            pass
+        elif orientation == 2:
+            # Mirrored left to right
+            img = img.transpose(Image.FLIP_LEFT_RIGHT)
+        elif orientation == 3:
+            # Rotated 180 degrees
+            img = img.rotate(180)
+        elif orientation == 4:
+            # Mirrored top to bottom
+            img = img.rotate(180).transpose(Image.FLIP_LEFT_RIGHT)
+        elif orientation == 5:
+            # Mirrored along top-left diagonal
+            img = img.rotate(-90, expand=True).transpose(Image.FLIP_LEFT_RIGHT)
+        elif orientation == 6:
+            # Rotated 90 degrees
+            img = img.rotate(-90, expand=True)
+        elif orientation == 7:
+            # Mirrored along top-right diagonal
+            img = img.rotate(90, expand=True).transpose(Image.FLIP_LEFT_RIGHT)
+        elif orientation == 8:
+            # Rotated 270 degrees
+            img = img.rotate(90, expand=True)
+
+    return img

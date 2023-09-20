@@ -1,0 +1,27 @@
+
+                                      <annotation>
+                                          <folder>images</folder>
+                                          <filename>201.jpg</filename>
+                                          <path>static/userdata/jim/20230824_112538-cucumber_5_Maturity/images/201.jpg</path>
+                                          <source>
+                                              <database>Unknown</database>
+                                          </source>
+                                          <size>
+                                              <width>845</width>
+                                              <height>1128</height>
+                                              <depth>3</depth>
+                                          </size>
+                                          <segmented>0</segmented>
+                                      <object>
+                                                    <name>bear</name>
+                                                    <pose>Unspecified</pose>
+                                                    <truncated>0</truncated>
+                                                    <difficult>0</difficult>
+                                                    <bndbox>
+                                                        <xmin>136</xmin>
+                                                        <ymin>305</ymin>
+                                                        <xmax>454</xmax>
+                                                        <ymax>982</ymax>
+                                                    </bndbox>
+                                                </object>
+                                                </annotation>

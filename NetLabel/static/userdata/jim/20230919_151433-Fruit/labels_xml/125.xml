@@ -1,0 +1,27 @@
+
+        <annotation>
+            <folder>images</folder>
+            <filename>125.jpg</filename>
+            <path>static\userdata\jim\20230919_151433-Fruit\images\125.jpg</path>
+            <source>
+                <database>Unknown</database>
+            </source>
+            <size>
+                <width>604</width>
+                <height>806</height>
+                <depth>3</depth>
+            </size>
+            <segmented>0</segmented>
+        <object>
+                    <name>Tangerine</name>
+                    <pose>Unspecified</pose>
+                    <truncated>0</truncated>
+                    <difficult>0</difficult>
+                    <bndbox>
+                        <xmin>2</xmin>
+                        <ymin>322</ymin>
+                        <xmax>76</xmax>
+                        <ymax>411</ymax>
+                    </bndbox>
+                </object>
+                </annotation>

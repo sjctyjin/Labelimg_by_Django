@@ -93,7 +93,7 @@ DATABASES = {
         'NAME': 'Djangouse',
         'USER': 'sa',
         'PASSWORD': 'pass',
-        'HOST': '192.168.2.105',
+        'HOST': '127.0.0.1',
         'PORT': '',  # Leave this empty to use the default SQL Server port (1433)
         'OPTIONS': {
             'driver': 'SQL Server Native Client 11.0',  # Adjust the driver version if needed

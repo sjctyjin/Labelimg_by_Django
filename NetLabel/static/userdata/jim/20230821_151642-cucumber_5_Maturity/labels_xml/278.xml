@@ -1,0 +1,27 @@
+
+        <annotation>
+            <folder>images</folder>
+            <filename>278.jpg</filename>
+            <path>static\userdata\jim\20230821_151642-cucumber_5_Maturity\images\278.jpg</path>
+            <source>
+                <database>Unknown</database>
+            </source>
+            <size>
+                <width>736</width>
+                <height>982</height>
+                <depth>3</depth>
+            </size>
+            <segmented>0</segmented>
+        <object>
+                    <name>flowering</name>
+                    <pose>Unspecified</pose>
+                    <truncated>0</truncated>
+                    <difficult>0</difficult>
+                    <bndbox>
+                        <xmin>244</xmin>
+                        <ymin>225</ymin>
+                        <xmax>621</xmax>
+                        <ymax>627</ymax>
+                    </bndbox>
+                </object>
+                </annotation>

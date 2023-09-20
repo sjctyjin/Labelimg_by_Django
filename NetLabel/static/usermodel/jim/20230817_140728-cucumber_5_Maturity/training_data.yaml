@@ -1,0 +1,5 @@
+path: ../userdata/jim
+train: 20230817_140728-cucumber_5_Maturity/images
+val: 20230817_140728-cucumber_5_Maturity/images
+nc: 5
+names: ['bud','flowering','bear','growth','mature']
