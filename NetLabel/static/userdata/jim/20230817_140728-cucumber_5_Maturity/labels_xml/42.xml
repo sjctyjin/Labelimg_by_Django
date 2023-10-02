@@ -36,4 +36,16 @@
                         <ymax>396</ymax>
                     </bndbox>
                 </object>
+                <object>
+                    <name>bud</name>
+                    <pose>Unspecified</pose>
+                    <truncated>0</truncated>
+                    <difficult>0</difficult>
+                    <bndbox>
+                        <xmin>210</xmin>
+                        <ymin>104</ymin>
+                        <xmax>269</xmax>
+                        <ymax>212</ymax>
+                    </bndbox>
+                </object>
                 </annotation>

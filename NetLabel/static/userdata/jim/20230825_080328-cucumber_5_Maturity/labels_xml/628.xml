@@ -13,26 +13,14 @@
                                           </size>
                                           <segmented>0</segmented>
                                       <object>
-                                                    <name>mature</name>
-                                                    <pose>Unspecified</pose>
-                                                    <truncated>0</truncated>
-                                                    <difficult>0</difficult>
-                                                    <bndbox>
-                                                        <xmin>81</xmin>
-                                                        <ymin>188</ymin>
-                                                        <xmax>394</xmax>
-                                                        <ymax>529</ymax>
-                                                    </bndbox>
-                                                </object>
-                                                <object>
                                                     <name>flowering</name>
                                                     <pose>Unspecified</pose>
                                                     <truncated>0</truncated>
                                                     <difficult>0</difficult>
                                                     <bndbox>
-                                                        <xmin>83</xmin>
-                                                        <ymin>188</ymin>
-                                                        <xmax>391</xmax>
+                                                        <xmin>88</xmin>
+                                                        <ymin>192</ymin>
+                                                        <xmax>401</xmax>
                                                         <ymax>529</ymax>
                                                     </bndbox>
                                                 </object>

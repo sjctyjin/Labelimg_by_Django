@@ -13,14 +13,26 @@
                                           </size>
                                           <segmented>0</segmented>
                                       <object>
+                                                    <name>bear</name>
+                                                    <pose>Unspecified</pose>
+                                                    <truncated>0</truncated>
+                                                    <difficult>0</difficult>
+                                                    <bndbox>
+                                                        <xmin>239</xmin>
+                                                        <ymin>301</ymin>
+                                                        <xmax>323</xmax>
+                                                        <ymax>601</ymax>
+                                                    </bndbox>
+                                                </object>
+                                                <object>
                                                     <name>growth</name>
                                                     <pose>Unspecified</pose>
                                                     <truncated>0</truncated>
                                                     <difficult>0</difficult>
                                                     <bndbox>
-                                                        <xmin>406</xmin>
+                                                        <xmin>414</xmin>
                                                         <ymin>152</ymin>
-                                                        <xmax>602</xmax>
+                                                        <xmax>598</xmax>
                                                         <ymax>628</ymax>
                                                     </bndbox>
                                                 </object>

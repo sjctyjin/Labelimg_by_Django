@@ -302,8 +302,6 @@ class Message(View):
             label_class = {}#存放類別的classes.txt
 
             for img in os.listdir(imgpath):#遍歷每一張圖片
-
-
                 frame = cv2.imread(f'{imgpath}/{img}')
                 YOLO_Format = ""
                 xml_content = f"""
@@ -492,13 +490,17 @@ class Label_List(View):
             # for a in range(0,10):
             #     print("=" * a)
             # print(round(float(imgwidth),1),round(float(imgheight),1))
-            for li in range(len(label_list_classname)):
-                if labels[0] == label_list_classname[li]:
-                    ymin, xmin, ymax, xmax, image_w, image_h = [float(labels[2]),float(labels[1]),float(labels[4]),float(labels[3]),int(round(float(imgwidth),1)),int(round(float(imgheight),1))]
-                    (x_iw_ratio, y_ih_ratio) = ( ( (xmin + xmax) * 0.5 ) / image_w, ((ymin + ymax) * 0.5 ) / image_h)
-                    tw_iw_ratio = (xmax - xmin) * 1. / image_w
-                    th_ih_ratio = (ymax - ymin) * 1. / image_h
-                    YOLO_Format +=f"""{li} {round(x_iw_ratio,6)} {round(y_ih_ratio,6)} {round(tw_iw_ratio,6)} {round(th_ih_ratio,6)}\n"""
+            print("標註數量: ",len(labe_list_inPython))
+            print("標註Label: ",labels)
+            #Yolo格式的開頭為對標註類別的對應序號
+            for labels in labe_list_inPython:#依標註數量依序取出
+                for li in range(len(label_list_classname)):#檢查標註類別的對應序號，若labels[0]序號與類別的排序對應則標為該類別序號
+                    if labels[0] == label_list_classname[li]:
+                        ymin, xmin, ymax, xmax, image_w, image_h = [float(labels[2]),float(labels[1]),float(labels[4]),float(labels[3]),int(round(float(imgwidth),1)),int(round(float(imgheight),1))]
+                        (x_iw_ratio, y_ih_ratio) = ( ( (xmin + xmax) * 0.5 ) / image_w, ((ymin + ymax) * 0.5 ) / image_h)
+                        tw_iw_ratio = (xmax - xmin) * 1. / image_w
+                        th_ih_ratio = (ymax - ymin) * 1. / image_h
+                        YOLO_Format +=f"""{li} {round(x_iw_ratio,6)} {round(y_ih_ratio,6)} {round(tw_iw_ratio,6)} {round(th_ih_ratio,6)}\n"""
 
         xml_content += "</annotation>"
 

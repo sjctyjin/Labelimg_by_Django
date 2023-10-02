@@ -13,27 +13,15 @@
                                           </size>
                                           <segmented>0</segmented>
                                       <object>
-                                                    <name>bear</name>
-                                                    <pose>Unspecified</pose>
-                                                    <truncated>0</truncated>
-                                                    <difficult>0</difficult>
-                                                    <bndbox>
-                                                        <xmin>220</xmin>
-                                                        <ymin>194</ymin>
-                                                        <xmax>398</xmax>
-                                                        <ymax>619</ymax>
-                                                    </bndbox>
-                                                </object>
-                                                <object>
                                                     <name>growth</name>
                                                     <pose>Unspecified</pose>
                                                     <truncated>0</truncated>
                                                     <difficult>0</difficult>
                                                     <bndbox>
-                                                        <xmin>250</xmin>
-                                                        <ymin>91</ymin>
-                                                        <xmax>412</xmax>
-                                                        <ymax>470</ymax>
+                                                        <xmin>249</xmin>
+                                                        <ymin>107</ymin>
+                                                        <xmax>407</xmax>
+                                                        <ymax>495</ymax>
                                                     </bndbox>
                                                 </object>
                                                 </annotation>

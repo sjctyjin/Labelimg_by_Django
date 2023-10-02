@@ -13,15 +13,15 @@
                                           </size>
                                           <segmented>0</segmented>
                                       <object>
-                                                    <name>bear</name>
+                                                    <name>flowering</name>
                                                     <pose>Unspecified</pose>
                                                     <truncated>0</truncated>
                                                     <difficult>0</difficult>
                                                     <bndbox>
-                                                        <xmin>320</xmin>
-                                                        <ymin>88</ymin>
-                                                        <xmax>544</xmax>
-                                                        <ymax>294</ymax>
+                                                        <xmin>97</xmin>
+                                                        <ymin>277</ymin>
+                                                        <xmax>417</xmax>
+                                                        <ymax>531</ymax>
                                                     </bndbox>
                                                 </object>
                                                 </annotation>

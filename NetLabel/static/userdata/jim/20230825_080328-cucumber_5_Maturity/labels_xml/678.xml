@@ -13,27 +13,15 @@
                                           </size>
                                           <segmented>0</segmented>
                                       <object>
-                                                    <name>mature</name>
-                                                    <pose>Unspecified</pose>
-                                                    <truncated>0</truncated>
-                                                    <difficult>0</difficult>
-                                                    <bndbox>
-                                                        <xmin>216</xmin>
-                                                        <ymin>189</ymin>
-                                                        <xmax>526</xmax>
-                                                        <ymax>529</ymax>
-                                                    </bndbox>
-                                                </object>
-                                                <object>
                                                     <name>flowering</name>
                                                     <pose>Unspecified</pose>
                                                     <truncated>0</truncated>
                                                     <difficult>0</difficult>
                                                     <bndbox>
-                                                        <xmin>217</xmin>
-                                                        <ymin>189</ymin>
-                                                        <xmax>524</xmax>
-                                                        <ymax>530</ymax>
+                                                        <xmin>215</xmin>
+                                                        <ymin>193</ymin>
+                                                        <xmax>529</xmax>
+                                                        <ymax>529</ymax>
                                                     </bndbox>
                                                 </object>
                                                 </annotation>

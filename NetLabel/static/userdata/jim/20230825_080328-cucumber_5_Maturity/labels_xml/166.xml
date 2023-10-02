@@ -18,10 +18,10 @@
                                                     <truncated>0</truncated>
                                                     <difficult>0</difficult>
                                                     <bndbox>
-                                                        <xmin>323</xmin>
-                                                        <ymin>390</ymin>
-                                                        <xmax>418</xmax>
-                                                        <ymax>740</ymax>
+                                                        <xmin>205</xmin>
+                                                        <ymin>313</ymin>
+                                                        <xmax>292</xmax>
+                                                        <ymax>728</ymax>
                                                     </bndbox>
                                                 </object>
                                                 <object>
@@ -30,10 +30,22 @@
                                                     <truncated>0</truncated>
                                                     <difficult>0</difficult>
                                                     <bndbox>
-                                                        <xmin>205</xmin>
-                                                        <ymin>324</ymin>
-                                                        <xmax>294</xmax>
-                                                        <ymax>712</ymax>
+                                                        <xmin>350</xmin>
+                                                        <ymin>119</ymin>
+                                                        <xmax>484</xmax>
+                                                        <ymax>544</ymax>
+                                                    </bndbox>
+                                                </object>
+                                                <object>
+                                                    <name>mature</name>
+                                                    <pose>Unspecified</pose>
+                                                    <truncated>0</truncated>
+                                                    <difficult>0</difficult>
+                                                    <bndbox>
+                                                        <xmin>325</xmin>
+                                                        <ymin>400</ymin>
+                                                        <xmax>410</xmax>
+                                                        <ymax>750</ymax>
                                                     </bndbox>
                                                 </object>
                                                 </annotation>

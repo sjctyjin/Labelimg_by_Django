@@ -13,15 +13,39 @@
                                           </size>
                                           <segmented>0</segmented>
                                       <object>
+                                                    <name>mature</name>
+                                                    <pose>Unspecified</pose>
+                                                    <truncated>0</truncated>
+                                                    <difficult>0</difficult>
+                                                    <bndbox>
+                                                        <xmin>318</xmin>
+                                                        <ymin>297</ymin>
+                                                        <xmax>394</xmax>
+                                                        <ymax>557</ymax>
+                                                    </bndbox>
+                                                </object>
+                                                <object>
                                                     <name>growth</name>
                                                     <pose>Unspecified</pose>
                                                     <truncated>0</truncated>
                                                     <difficult>0</difficult>
                                                     <bndbox>
-                                                        <xmin>275</xmin>
-                                                        <ymin>90</ymin>
-                                                        <xmax>371</xmax>
-                                                        <ymax>323</ymax>
+                                                        <xmin>278</xmin>
+                                                        <ymin>92</ymin>
+                                                        <xmax>370</xmax>
+                                                        <ymax>330</ymax>
+                                                    </bndbox>
+                                                </object>
+                                                <object>
+                                                    <name>growth</name>
+                                                    <pose>Unspecified</pose>
+                                                    <truncated>0</truncated>
+                                                    <difficult>0</difficult>
+                                                    <bndbox>
+                                                        <xmin>90</xmin>
+                                                        <ymin>221</ymin>
+                                                        <xmax>219</xmax>
+                                                        <ymax>416</ymax>
                                                     </bndbox>
                                                 </object>
                                                 </annotation>

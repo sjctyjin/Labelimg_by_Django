@@ -13,15 +13,27 @@
                                           </size>
                                           <segmented>0</segmented>
                                       <object>
+                                                    <name>growth</name>
+                                                    <pose>Unspecified</pose>
+                                                    <truncated>0</truncated>
+                                                    <difficult>0</difficult>
+                                                    <bndbox>
+                                                        <xmin>264</xmin>
+                                                        <ymin>191</ymin>
+                                                        <xmax>409</xmax>
+                                                        <ymax>599</ymax>
+                                                    </bndbox>
+                                                </object>
+                                                <object>
                                                     <name>bear</name>
                                                     <pose>Unspecified</pose>
                                                     <truncated>0</truncated>
                                                     <difficult>0</difficult>
                                                     <bndbox>
-                                                        <xmin>195</xmin>
-                                                        <ymin>583</ymin>
-                                                        <xmax>283</xmax>
-                                                        <ymax>805</ymax>
+                                                        <xmin>190</xmin>
+                                                        <ymin>584</ymin>
+                                                        <xmax>281</xmax>
+                                                        <ymax>804</ymax>
                                                     </bndbox>
                                                 </object>
                                                 </annotation>

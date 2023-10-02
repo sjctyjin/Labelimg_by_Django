@@ -19,9 +19,21 @@
                                                     <difficult>0</difficult>
                                                     <bndbox>
                                                         <xmin>101</xmin>
-                                                        <ymin>438</ymin>
+                                                        <ymin>433</ymin>
                                                         <xmax>398</xmax>
-                                                        <ymax>657</ymax>
+                                                        <ymax>659</ymax>
+                                                    </bndbox>
+                                                </object>
+                                                <object>
+                                                    <name>bud</name>
+                                                    <pose>Unspecified</pose>
+                                                    <truncated>0</truncated>
+                                                    <difficult>0</difficult>
+                                                    <bndbox>
+                                                        <xmin>149</xmin>
+                                                        <ymin>192</ymin>
+                                                        <xmax>253</xmax>
+                                                        <ymax>275</ymax>
                                                     </bndbox>
                                                 </object>
                                                 </annotation>

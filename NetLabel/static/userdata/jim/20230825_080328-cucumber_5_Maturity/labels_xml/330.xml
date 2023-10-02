@@ -13,15 +13,15 @@
                                           </size>
                                           <segmented>0</segmented>
                                       <object>
-                                                    <name>mature</name>
+                                                    <name>flowering</name>
                                                     <pose>Unspecified</pose>
                                                     <truncated>0</truncated>
                                                     <difficult>0</difficult>
                                                     <bndbox>
-                                                        <xmin>176</xmin>
-                                                        <ymin>131</ymin>
-                                                        <xmax>444</xmax>
-                                                        <ymax>434</ymax>
+                                                        <xmin>174</xmin>
+                                                        <ymin>133</ymin>
+                                                        <xmax>441</xmax>
+                                                        <ymax>435</ymax>
                                                     </bndbox>
                                                 </object>
                                                 </annotation>

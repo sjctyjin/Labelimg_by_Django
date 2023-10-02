@@ -13,27 +13,15 @@
                                           </size>
                                           <segmented>0</segmented>
                                       <object>
-                                                    <name>mature</name>
+                                                    <name>flowering</name>
                                                     <pose>Unspecified</pose>
                                                     <truncated>0</truncated>
                                                     <difficult>0</difficult>
                                                     <bndbox>
                                                         <xmin>129</xmin>
                                                         <ymin>178</ymin>
-                                                        <xmax>442</xmax>
-                                                        <ymax>483</ymax>
-                                                    </bndbox>
-                                                </object>
-                                                <object>
-                                                    <name>flowering</name>
-                                                    <pose>Unspecified</pose>
-                                                    <truncated>0</truncated>
-                                                    <difficult>0</difficult>
-                                                    <bndbox>
-                                                        <xmin>131</xmin>
-                                                        <ymin>180</ymin>
-                                                        <xmax>442</xmax>
-                                                        <ymax>484</ymax>
+                                                        <xmax>430</xmax>
+                                                        <ymax>474</ymax>
                                                     </bndbox>
                                                 </object>
                                                 </annotation>

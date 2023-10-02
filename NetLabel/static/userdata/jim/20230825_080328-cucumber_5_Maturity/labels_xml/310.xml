@@ -13,13 +13,25 @@
                                           </size>
                                           <segmented>0</segmented>
                                       <object>
+                                                    <name>flowering</name>
+                                                    <pose>Unspecified</pose>
+                                                    <truncated>0</truncated>
+                                                    <difficult>0</difficult>
+                                                    <bndbox>
+                                                        <xmin>117</xmin>
+                                                        <ymin>158</ymin>
+                                                        <xmax>422</xmax>
+                                                        <ymax>513</ymax>
+                                                    </bndbox>
+                                                </object>
+                                                <object>
                                                     <name>bear</name>
                                                     <pose>Unspecified</pose>
                                                     <truncated>0</truncated>
                                                     <difficult>0</difficult>
                                                     <bndbox>
-                                                        <xmin>380</xmin>
-                                                        <ymin>204</ymin>
+                                                        <xmin>381</xmin>
+                                                        <ymin>207</ymin>
                                                         <xmax>612</xmax>
                                                         <ymax>314</ymax>
                                                     </bndbox>
