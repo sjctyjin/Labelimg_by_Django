@@ -1,0 +1,1018 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <link rel="shortcut icon" href="static/favicon.ico" type="image/x-icon">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>模型訓練</title>
+        <link href="static/css/styles.css" rel="stylesheet" />
+        <link href="static/css/table_style.css" rel="stylesheet" />
+
+        <script src="static/js/all.js" crossorigin="anonymous"></script>
+        <link href="static/js/jquery-ui.css" rel="stylesheet" />
+        <script src="static/js/jquery.js"></script>
+        <script src="static/js/jquery-ui.js"></script>
+
+        <style>
+/* botstrap */
+.funkyradio div {
+  clear: both;
+  overflow: hidden;
+}
+
+.funkyradio label {
+  width: 50%;
+  border-radius: 3px;
+  border: 1px solid #D1D3D4;
+  font-weight: normal;
+}
+
+.funkyradio input[type="radio"]:empty,
+.funkyradio input[type="checkbox"]:empty {
+  display: none;
+}
+
+.funkyradio input[type="radio"]:empty ~ label,
+.funkyradio input[type="checkbox"]:empty ~ label {
+  position: relative;
+  line-height: 1.5em;
+  text-indent: 3.25em;
+  margin-top: 1em;
+  cursor: pointer;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+
+.funkyradio input[type="radio"]:empty ~ label:before,
+.funkyradio input[type="checkbox"]:empty ~ label:before {
+  position: absolute;
+  display: block;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  content: '';
+  width: 2em;
+  background: #D1D3D4;
+  border-radius: 3px 0 0 3px;
+}
+
+.funkyradio input[type="radio"]:hover:not(:checked) ~ label,
+.funkyradio input[type="checkbox"]:hover:not(:checked) ~ label {
+  color: #888;
+}
+
+.funkyradio input[type="radio"]:hover:not(:checked) ~ label:before,
+.funkyradio input[type="checkbox"]:hover:not(:checked) ~ label:before {
+  content: '\2611';
+  text-indent: .2em;
+  color: #C2C2C2;
+}
+
+.funkyradio input[type="radio"]:checked ~ label,
+.funkyradio input[type="checkbox"]:checked ~ label {
+  color: #777;
+}
+
+.funkyradio input[type="radio"]:checked ~ label:before,
+.funkyradio input[type="checkbox"]:checked ~ label:before {
+  content: '\2611';
+  text-indent: .3em;
+  color: #1341e7;
+  background-color: #360ed6;
+}
+
+.funkyradio input[type="radio"]:focus ~ label:before,
+.funkyradio input[type="checkbox"]:focus ~ label:before {
+  box-shadow: 0 0 0 3px #999;
+}
+
+.funkyradio-default input[type="radio"]:checked ~ label:before,
+.funkyradio-default input[type="checkbox"]:checked ~ label:before {
+  color: #2544d1;
+  background-color: #f1f1f1;
+}
+
+/*  */
+            .updf{
+              position: absolute;
+              width: 100%;
+              left: 0%;
+              border: 1px silver solid;
+              border-radius: 25px;
+              padding: 0px;
+  
+            }
+             #upd_tb{
+              margin: 0;
+              margin-left: auto;
+              margin-right: auto;
+              width:100%;
+              left: 0%;
+              position: relative;
+             
+             }
+
+             .ui-autocomplete{
+                    z-index: 99999;
+
+             }
+             #upd_tb td{
+              border: 0px silver solid;
+              padding: 5px;
+              font-size: 2.5vmin;
+              
+             }
+             .btn{
+              font-size: 2.5vmin;
+             }
+             #foldername{
+                width: 50%;
+  
+             }
+
+             /* #label_img{
+                user-select: none;-webkit-user-drag: none;
+             } */
+
+            div#imgarea{
+                /* background-image: url(static/demo1.jpg); */
+                background-repeat: no-repeat;float: left;background-size: cover;
+            }
+            canvas#pCanvas{
+                cursor: pointer;
+            }
+            canvas#cimage{
+                border: 0px dotted;
+            }
+
+            #filelist{
+                height:50vh;
+            }
+
+          </style>
+          <script>
+            //全域變數
+            var canvas, context, image;
+            var arr = new Array();
+            var clone_panel;
+            var availableTags = [];
+            var origin_size = 0;
+            var now_size = 0;
+
+            function delay(n){
+                return new Promise(function(resolve){
+                    setTimeout(resolve,n*1000);
+                });
+            }
+
+            //載入網頁時,同時載入圖片
+            async function myAsyncFunction(seleceidx){
+                        
+                var filename = document.getElementById("filelist").options[seleceidx].text;                
+                $("#imgarea").css("background-image","url("+filename+")");
+                
+                $("#label_img").attr("src",filename );
+                $("#label_img").attr("width","100%" );
+                origin_size = $("#label_img").css("width");
+                $("#label_img").attr("width","25%" );
+                now_size = $("#label_img").css("width");
+
+                // $("#imgarea").css("width","25%");
+                // $("#imgarea").css("height","100vh");
+
+
+                await delay(0.1);//delay 0.1 sec
+                
+                console.log(Math.round(parseFloat($('#label_img').css("width"))));
+                document.getElementById("pCanvas").width = Math.round(parseFloat($('#label_img').css("width")));
+                document.getElementById("pCanvas").height = Math.round(parseFloat($('#label_img').css("height")));
+                check_cav = 1;
+                console.log("Loding........ 完成");
+                $(".store_label").css("height", Math.round(parseFloat($('#label_img').css("height")))+"px");
+                $('.label_board').remove();
+                ajaxRead(filename);//讀取已存在的標註框
+                await delay(0.5);//delay 0.1 sec
+                //讀取到標註框後，將其繪製
+                // draw_all_rect();
+                await delay(1);//delay 0.1 sec
+            }
+
+            async function loge(){
+
+                if(document.getElementById('class_by_keyword') != document.activeElement){
+
+                    switch (event.key) {
+                        case "a":
+                            if(document.getElementById("filelist").options.length > 0){
+                            
+                                var idx = document.getElementById("filelist").selectedIndex;
+                                if(parseInt(idx) > 0 ){                                 
+                                    $('.label_board').remove()
+                                    //Step1. 載入上一張
+                                    document.getElementById("filelist").selectedIndex = parseInt(idx-1);
+                                    myAsyncFunction(parseInt(idx-1));
+                                    ajaxRead();//若有結果,就秀出上次label結果
+                                }
+                                await delay(0.5);//delay 0.1 sec
+                                draw_all_rect();
+                            }
+                            break;
+                        case "d":
+                            if(document.getElementById("filelist").options.length > 0){
+                                var labelarea = document.getElementsByClassName("store_label")[0];
+                                var labeldiv = 0;
+                                var idx = document.getElementById("filelist").selectedIndex;
+                                if(parseInt(idx) < document.getElementById("filelist").options.length ){
+                                    $('.label_board').remove()
+                                    //Step1 . 載入下一張
+                                    document.getElementById("filelist").selectedIndex = parseInt(idx+1);
+                                    myAsyncFunction(parseInt(idx+1));   
+                                    ajaxRead();
+                                    await delay(0.5);//delay 0.1 sec
+                                    draw_all_rect();
+                                }
+                            }
+                            break;
+                        case "ArrowLeft":
+                            console.log("ArrowLeft");
+                            break;
+                        case "ArrowRight":
+                            console.log("ArrowRight");
+                            break;
+                        default:
+                            console.log(event.key, event.keyCode);
+                            key_keep = event.key;
+                            console.log("顯示"+key_keep);
+                    
+                        //document.getElementById("textId").value = key_keep;
+                        //return; 
+
+                    }
+                }
+            }
+
+            
+
+            function init () {
+
+                $("#batch_text").html($("#batch").val());
+                $("#batch").on("input", function(){ // 當輸入 input 時執行以下動作
+                    $("#batch_text").html($(this).val()); // 將本數值顯示在 #rangeTxt 上
+                });
+
+                $("#epoch_text").html($("#epoch").val());
+                $("#epoch").on("input", function(){ // 當輸入 input 時執行以下動作
+                    $("#epoch_text").html($(this).val()); // 將本數值顯示在 #rangeTxt 上
+                });
+
+                $("#Image_Size").html($("#Image_Size_text").val());
+                $("#Image_Size").on("input", function(){ // 當輸入 input 時執行以下動作
+                    $("#Image_Size_text").html($(this).val()); // 將本數值顯示在 #rangeTxt 上
+                });
+               
+                $('#datatablesSimple').DataTable({
+                    "order": [[ 1, "desc" ]]
+                });
+
+                var parm = "{{urlguide}}" ;
+                console.log("參數: ",parm);
+                if(parm != ""){
+                    let urlParams = new URLSearchParams(window.location.search);
+                    if(urlParams.get('filepath') != parm){
+
+                        window.location.href=window.location.pathname+"?filepath="+parm;
+                        console.log(window.location.href+"?filepath="+parm);
+                    }
+                    
+                }
+                //檢測是否reloading
+                // window.onbeforeunload = function() {
+                //     return true; // return 这句必不可少
+                // }
+                clone_panel = document.querySelector('.label_panel').cloneNode()
+                //1新增畫布內容2綁定快捷鍵
+                canvas = document.getElementById("pCanvas");
+                context =canvas.getContext("2d");
+                context.lineWidth=2;  			//線寬
+                context.strokeStyle='blue';	//線的顏色
+                document.addEventListener("keydown", loge);
+                document.getElementById('label_class').querySelector('input').addEventListener("keydown", check_pass);
+                document.getElementById('label_class').querySelector('select').addEventListener("keydown", check_pass);
+
+
+                var check_cav = 0
+             
+            }
+            function draw_all_rect(){
+                arr = new Array();
+                var labelarea = document.getElementsByClassName("store_label")[0];
+                var divc = 0;
+                
+                for(var divn = 0;divn < labelarea.childNodes.length;divn++){
+                    if(labelarea.childNodes[divn].nodeName == "DIV"){
+                        
+                        if(divc != 0){
+                            arr.push(divn);
+                        }
+                        divc++;
+                    }          
+                } 
+                // console.log("測試項1 : ",arr)
+                //依陣列值畫圖框
+                var labelind = (parseFloat(now_size)/parseFloat(origin_size)*2+0.08);
+                console.log(labelind);
+                for(var m = 0;m < arr.length;m++){
+                    // console.log("測試項2 : ",arr[m])
+                    
+                    var thiss = labelarea.childNodes[arr[m]];
+                            var bxmin = thiss.children[0].children[1].getElementsByTagName('b')[0].innerHTML*labelind;
+                            var bymin = thiss.children[0].children[1].getElementsByTagName('b')[1].innerHTML*labelind;
+                            var bmax = thiss.children[0].children[1].getElementsByTagName('b')[2].innerHTML*labelind;
+                            var bmin = thiss.children[0].children[1].getElementsByTagName('b')[3].innerHTML*labelind;
+                            var bh = thiss.children[0].children[1].getElementsByTagName('b')[4].innerHTML*labelind;
+                            var bw = thiss.children[0].children[1].getElementsByTagName('b')[5].innerHTML*labelind;
+                            //context.clearRect(0,0,canvas.width,canvas.height);
+                            //context.strokeStyle = "rgba(255,0,0,0.3)";
+                            context.fillStyle = "rgba(0,0,255,0.2)";
+                            context.beginPath();
+                            context.rect(bxmin,bymin,bw,bh);
+                            context.strokeRect(bxmin,bymin,bw,bh);
+                            context.fill();
+                            //console.log(divc);
+                }
+
+                return arr[m];
+
+
+            }
+            
+           
+            function check_pass(val){
+                //console.log(val.nodeName);
+                if(val.key == "Enter" || val.nodeName == "BUTTON"){
+                   
+                    d = document.getElementsByClassName('label_card')[0].cloneNode(true);
+                    //顯示字卡
+                    d.style.display = "block";
+                    classname = document.getElementById('label_class').querySelector('input').value;
+
+                    //標註名稱-次序
+                    d.children[0].children[0].children[0].children[0].innerHTML = classname;
+                    if(stopx < startx){
+                        stop_X = startx;
+                        start_X = stopx;
+                    }else{
+                        stop_X = stopx;
+                        start_X = startx;
+                    }
+
+                    if(stopy < starty){
+                        stop_Y = starty;
+                        start_Y = stopy;
+                    }else{
+                        stop_Y = stopy;
+                        start_Y = starty;
+                    }
+                    d.children[0].children[1].getElementsByTagName('b')[0].innerHTML= start_X;
+                    d.children[0].children[1].getElementsByTagName('b')[1].innerHTML= start_Y;
+                    d.children[0].children[1].getElementsByTagName('b')[2].innerHTML= stop_X;
+                    d.children[0].children[1].getElementsByTagName('b')[3].innerHTML= stop_Y;
+                    d.children[0].children[1].getElementsByTagName('b')[4].innerHTML= Math.abs(Math.round(parseFloat(h)));
+                    d.children[0].children[1].getElementsByTagName('b')[5].innerHTML= Math.abs(Math.round(parseFloat(w)));
+                    d.setAttribute("class","col-md-8 label_card label_board" );
+                    d.onmouseenter = function(){
+                        var bxmin = this.children[0].children[1].getElementsByTagName('b')[0].innerHTML;
+                        var bymin = this.children[0].children[1].getElementsByTagName('b')[1].innerHTML;
+                        var bmax = this.children[0].children[1].getElementsByTagName('b')[2].innerHTML;
+                        var bmin = this.children[0].children[1].getElementsByTagName('b')[3].innerHTML;
+                        var bh = this.children[0].children[1].getElementsByTagName('b')[4].innerHTML;
+                        var bw = this.children[0].children[1].getElementsByTagName('b')[5].innerHTML;
+                        context.clearRect(0,0,canvas.width,canvas.height);
+                        context.beginPath();
+                        //清空繪圖區域
+                        //context.clear(context.COLOR_BUFFER_BIT);
+                        //context.clearColor(0.0, 0.5, 0.5, 1.0);
+                        context.strokeStyle = "rgba(0,255,0,0.3)";
+                        context.fillStyle = "rgba(0,0,255,0.3)";
+                        
+                        context.rect(bxmin,bymin,bw,bh);
+                        context.strokeRect(bxmin,bymin,bw,bh);
+                        context.fill();
+
+                        
+
+                        // console.log(bxmin);
+                    };
+                    d.onmouseleave = function(){
+                        // context.clear(context.COLOR_BUFFER_BIT);
+                        // context.clearColor(0.0, 0.5, 0.5, 1.0);
+                        
+                        draw_all_rect();
+                    };
+                
+                    document.getElementsByClassName("store_label")[0].appendChild(d);
+                    //標註panel
+                    document.getElementById("label_class").style.display = "none";   
+                    //清除畫痕
+                    context.clearRect(0,0,canvas.width,canvas.height);   
+                    // console.log(d);
+                    draw_all_rect();
+
+                    //檢查select是否存在該值-----------------------------------------------------
+
+                    var select = document.getElementById("class_list");
+                        var inputValue = document.getElementById("class_by_keyword").value;
+                        var options = select.options;
+                        var found = false;
+                        console.log(found);
+                        for (var i = 0; i < options.length; i++) {
+                            if (options[i].value === inputValue) {
+                            found = true;
+                            break;
+                            }
+                        }
+
+                        if (!found) {
+                            var option = document.createElement("option");
+                            option.value = inputValue;
+                            option.text = inputValue;
+                            select.add(option);
+                            console.log('加入');
+                            availableTags.push(inputValue);
+                        }
+
+                        document.getElementsByClassName("form-select")[0].querySelectorAll('option').forEach(option => {
+                            if($("#class_by_keyword").val() == option.textContent){
+                                document.getElementById("class_list").selectedIndex = option.index;
+                            }
+                        });
+                }
+                // else
+                // {
+                //     check_no();
+                // }
+                //console.log(val.parentElement.parentElement.parentElement.querySelector('input').value);
+                
+            }
+
+            function check_no(val){
+                document.getElementById("label_class").style.display = "none";   
+                //清除畫痕
+                context.clearRect(0,0,canvas.width,canvas.height);   
+            }
+            function getlist(val){
+                document.getElementById('label_class').querySelector('input').value = val.options[val.selectedIndex].text;             
+            }
+            //file list
+            async function getlist2(val){
+                //document.getElementById('label_class').querySelector('input').value = val.options[val.selectedIndex].text;
+                console.log(val.options[val.selectedIndex].text);
+                
+                if(document.querySelectorAll(".label_board").length != 0){
+                    //儲存當前label結果
+                    //ajaxStore();
+                    $('.label_board').remove()
+
+                }
+                myAsyncFunction(val.selectedIndex);
+                $(".store_label").css("height", Math.round(parseFloat($('#label_img').css("height")))+"px");
+                
+                ajaxRead();
+                await delay(0.5);//delay 0.1 sec
+                draw_all_rect();
+                
+               
+            }
+
+            function funs(){
+              var d = document.getElementById('updfiles').files.length;
+              document.getElementById('filecount').innerHTML = "已選擇"+d+"個檔案";
+              document.getElementById('dir_name').style.display="block";
+              console.log(d);
+            }
+
+            
+
+            function ajaxRead(){//讀取已存在的標註框
+                var csrft = $("[name='csrfmiddlewaretoken']").val();
+                var filepath = document.getElementById("filelist").options[document.getElementById("filelist").selectedIndex].text
+
+                $.ajax({
+                    url:"read",
+                    type:"POST",
+                    contentType: "application/x-www-form-urlencoded;charset=UTF-8",
+                    //Django用法 Post接收contentType 使用x-www-form-urlencoded
+                    //一般使用 application/json;
+                    data: 
+                    {   
+                        "filepath":filepath,
+                        "csrfmiddlewaretoken":csrft,
+                    }
+                    ,dataType: 'json',
+
+                        success: function(data){
+                            data['data'].forEach(option => {
+                                console.log(option[0]);
+
+                                d = document.getElementsByClassName('label_card')[0].cloneNode(true);
+                                //顯示字卡
+                                d.style.display = "block";
+                                //標註名稱-次序
+                                d.children[0].children[0].children[0].children[0].innerHTML = option[0];
+                                d.children[0].children[1].getElementsByTagName('b')[0].innerHTML= option[1];
+                                d.children[0].children[1].getElementsByTagName('b')[1].innerHTML= option[2];
+                                d.children[0].children[1].getElementsByTagName('b')[2].innerHTML= option[3];
+                                d.children[0].children[1].getElementsByTagName('b')[3].innerHTML= option[4];
+                                d.children[0].children[1].getElementsByTagName('b')[4].innerHTML= option[5];
+                                d.children[0].children[1].getElementsByTagName('b')[5].innerHTML= option[6];
+                                d.setAttribute("class","col-md-8 label_card label_board" );
+                                d.onmouseenter = function(){
+                                    var bxmin = this.children[0].children[1].getElementsByTagName('b')[0].innerHTML;
+                                    var bymin = this.children[0].children[1].getElementsByTagName('b')[1].innerHTML;
+                                    var bmax = this.children[0].children[1].getElementsByTagName('b')[2].innerHTML;
+                                    var bmin = this.children[0].children[1].getElementsByTagName('b')[3].innerHTML;
+                                    var bh = this.children[0].children[1].getElementsByTagName('b')[4].innerHTML;
+                                    var bw = this.children[0].children[1].getElementsByTagName('b')[5].innerHTML;
+                                    context.clearRect(0,0,canvas.width,canvas.height);
+                                    context.beginPath();
+                                    //清空繪圖區域
+                                    //context.clear(context.COLOR_BUFFER_BIT);
+                                    //context.clearColor(0.0, 0.5, 0.5, 1.0);
+                                    context.strokeStyle = "rgba(0,255,0,0.3)";
+                                    context.fillStyle = "rgba(0,0,255,0.3)";
+                                    context.rect(bxmin/2,bymin/2,bw/2,bh/2);
+                                    context.strokeRect(bxmin/2,bymin/2,bw/2,bh/2);
+                                    context.fill();
+                                    // console.log(bxmin);
+                            };
+                            d.onmouseleave = function(){
+                                // context.clear(context.COLOR_BUFFER_BIT);
+                                // context.clearColor(0.0, 0.5, 0.5, 1.0);
+                                
+                                draw_all_rect();
+                            };
+                        
+                            document.getElementsByClassName("store_label")[0].appendChild(d);
+                            //標註panel
+                            document.getElementById("label_class").style.display = "none";   
+                            //清除畫痕
+                            //context.clearRect(0,0,canvas.width,canvas.height);   
+                            //console.log(d);
+                            
+
+                            });
+                            console.log(data['data']);
+                        }
+                })
+            }
+
+
+            function check(){
+                if(document.getElementById('data_set_name').value == ""){
+                    alert("請填入資料夾名稱");
+
+                }
+                else{
+                    var userForm = document.getElementById("userForm");
+                    userForm.submit();
+                    return true;
+                }
+            }
+
+            
+            function training_strat(it){
+                var csrft = $("[name='csrfmiddlewaretoken']").val();
+                var timer_progress = 0;
+                document.getElementById('cmd-info').innerHTML = "";
+                
+                var model_check = "{{check_model}}";
+                console.log(model_check);
+                if(model_check == "1"){
+                    var yes = confirm("此資料集已存在訓練結果，是否要重新執行訓練?");
+
+                    if(!yes){
+                        return false;
+                    }
+                }
+
+                it.disabled = true;
+
+                var progress_timer = setInterval(function() {
+                        console.log(timer_progress);
+                        $.ajax({
+                        url: "/training/progress",
+                        type: "GET",
+                        success: function(response) {
+                            console.log(response);
+                            console.log(response.status);
+                            if(response.status == "Fail"){
+                                document.getElementById('cmd-info').innerHTML += response.status+"<br/>";
+                                clearInterval(progress_timer);
+                            }
+                            // 更新訓練進度的顯示
+                            document.getElementById('progress').textContent = response.progress;
+                            document.getElementById('cmd-info').innerHTML += "模型訓練中，已完成。。。"+response.status+"<br/>";
+                            if(response.status == "100%"){
+                                clearInterval(progress_timer);
+                            }
+                            var element = document.getElementById("progress_space");
+                            element.scrollTop = element.scrollHeight;
+                        },
+                        error: function(xhr, status, error) {
+                            console.error(error);
+                        }
+
+                       
+                        });
+                        
+                    }, 1000); // 每秒獲取一次訓練進度
+                $.ajax({
+                    url:"training",
+                    type:"POST",
+                    contentType: "application/x-www-form-urlencoded;charset=UTF-8",
+                    //Django用法 Post接收contentType 使用x-www-form-urlencoded
+                    //一般使用 application/json;
+                    data:                   
+                    {   
+                       
+                        "filepath":window.location.search.substr(10),
+                        "batch": $('#batch').val(),
+                        "epoch": $('#epoch').val(),
+                        "ImageSize" : $("[name='imagesize']:checked").val(),
+                        "model" : $("[name='yolov5']:checked").val(),
+
+                        "csrfmiddlewaretoken":csrft,
+                                        
+                    }
+                    ,dataType: 'json',
+
+                        success: function(data){
+                        // console.log('ajax result:')
+                        console.log(data)
+                        if(data["status"] == '尚未進行標註，無法執行訓練'){
+                            document.getElementById('cmd-info').innerHTML += data["status"] ;
+                            clearInterval(progress_timer);
+                        }
+                        else{
+                            document.getElementById('cmd-info').innerHTML += "模型訓練完成 。 "+data["finish"]+"<br/>請至模型檢視查看訓練結果";
+                            it.disabled = false;
+                            if(data["unlabel"] != ""){
+                                document.getElementById('cmd-info').innerHTML += "尚有以下圖片 : <br/> <br/>"+data["unlabel"]+
+                                " <br/>未完成標註<br/>請在完成標註後重新訓練以達到更好的訓練結果";
+                            }
+                            var element = document.getElementById("progress_space");
+                                element.scrollTop = element.scrollHeight;
+                            clearInterval(progress_timer);
+                        }                     
+                    }
+                }).done(function(response) {
+                // 請求成功的處理
+                    console.log('請求成功:', response);
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    // 請求失敗的處理
+                    console.log('請求失敗:', textStatus, errorThrown);
+                    })
+
+            }
+            
+         
+          </script>
+
+          
+
+    </head>
+    <body class="sb-nav-fixed" onload="init()">
+
+{% csrf_token %}
+        <div id="label_class" style="display: none;position:absolute;z-index:1999;background-color: white;border:1px solid slategray;">
+            <div>
+                <div class="toast-header d-flex justify-content-between">
+                    <div class="d-flex justify-content-start">
+                        <strong class="mr-auto text-left">標註類別</strong>
+                    </div>
+                  
+                  <div class="d-flex justify-content-end">
+                    <button type="button" class="ml-2 mb-1 d-flex justify-content-end" onclick="check_no(this)" >
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  
+                </div>
+                <div class="toast-body">
+                    <div class="col-lg-12">
+                        <div class="input-group">
+                           
+                            <input type="text" class="form-control form-control-sm" id="class_by_keyword">
+
+                        </div><!-- /input-group -->
+                    </div>
+                    <div class="toast-header d-flex justify-content-between">
+                        <div class="d-flex justify-content-start">
+                            
+                        </div>
+                      
+                      <div class="col-lg-12 d-flex justify-content-end">
+                        <button type="button" class="btn btn-success btn-sm fs-6" onclick="check_pass(this)">OK</button>&nbsp;
+                        <button type="button" class="btn btn-danger btn-sm fs-6" onclick="check_no(this)">Cancel</button>
+                      </div>
+                      
+                    </div>
+                    <div class="col-lg-12">
+                        <select class="form-select" multiple aria-label="multiple select example" id="class_list" onchange="getlist(this)">
+                            <option selected>Kumquat</option>
+                            <option selected>Strawberry</option>
+
+                            <option selected>Banana</option>
+
+                            <option selected>Berry</option>
+
+                          
+                        </select>
+                    </div>
+                </div>
+              </div>
+        </div>
+
+        {{menu | safe}}
+        <div id="layoutSidenav">
+            <div id="layoutSidenav_nav">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                    <div class="sb-sidenav-menu">
+                        <div class="nav" >
+                            <a class="nav-link" href="index" >
+                                <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                                模型訓練
+                            </a>
+
+                            <table id="upd_tb">
+                                <!-- <tr><td><span>{{alert}}</span></td></tr> -->
+                              <form action="" enctype='multipart/form-data' method='POST' id="userForm">
+                                {% csrf_token %}
+                               
+                                <tr><td >
+                                    File list&nbsp;&nbsp;&nbsp;&nbsp;總數 : {{dirslen}}<br/><br/>
+                                    <select id="filelist" class="form-select" multiple aria-label="" style="position: relative;height:60vh;overflow: scroll;" onchange="getlist2(this)">
+
+
+                                        {% for i in dirs %}
+                                            <option value="3">{{i}}</option>
+                                        {% endfor %}
+
+                                    </select>
+                                </td></tr>
+
+
+                              </form>
+                            </table>
+
+                        </div>
+                    </div>
+                    <div class="sb-sidenav-footer">
+                        <div class="small">Logged in as:</div>
+                        {{user}}
+                    </div>
+                </nav>
+            </div>
+
+
+            <div id="layoutSidenav_content">
+                <main>
+
+
+
+
+                    <div class="container-fluid px-4">
+                        <h1 class="mt-4">{{obj_name}}</h1>
+<!--                        <ol class="breadcrumb mb-4">-->
+<!--                            <li class="breadcrumb-item active">Dashboard</li>-->
+<!--                        </ol>-->
+                        <div class="row">
+                            <div class="col-xl-12 ">
+                                <div class="card mb-4">
+                                    <div class="card-header" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                        <i class="fas fa-chart-bar me-1"></i>
+                                        資料夾
+                                    </div>
+
+                                     <div class="card-body collapse" id="collapseExample">
+                                <table id="datatablesSimple">
+                                    <thead>
+                                        <tr>
+                                            <th>資料夾名稱</th>
+                                            <th>建立時間</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            <th>資料夾名稱</th>
+                                            <th>建立時間</th>
+
+                                        </tr>
+                                    </tfoot>
+                                    <tbody>
+                                         {% for a in file_dir %}
+                                               <tr>
+                                                    <td><a href="training?filepath={{a.0}}">{{a.0}}</a></td>
+                                                    <td>{{a.1}}</td>
+                                                </tr>
+                                        {% endfor %}
+
+                                    </tbody>
+                                </table>
+                            </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="card mb-4 label_panel">
+                            <div class="card-header">
+                                <i class="fas fa-table me-1"></i>
+                                模型參數設定
+                            </div>
+                            <div class="card-body" >
+
+                                <div id="imgarea" style="border:3px solid;display: block;" >
+                                    <img id="label_img" style="display: none;" >
+                                    <canvas id="pCanvas"  ></canvas>
+                                </div>
+                               
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div style="margin-left: 0%;" style="width: 100%;">
+                                            
+                                            <div class="form-check" style="width: 100%;">
+                                                <label class="form-check-label" for="batch">
+                                                    Batch Size &nbsp;:&nbsp;&nbsp;<span id="batch_text"></span>
+                                                </label> 
+                                                <input class="form-range" type="range" id="batch" value="8" min="8" step="8" max="64"  value=""  >
+                                                                                          
+                                                
+                                            </div>
+                                        </div>
+                                        <div style="margin-left: 0%;" style="width: 100%;">
+                                            <div class="form-check" style="width: 100%;">
+                                                <label class="form-check-label" for="epoch">
+                                                    Epoch  &nbsp;:&nbsp;&nbsp;<span id="epoch_text"></span>
+                                                </label> 
+                                                <input class="form-range" type="range" id="epoch" value="100" min="1" step="1" max="500">
+                                                                                          
+                                                
+                                            </div>
+                                        </div>
+                                        <div style="margin-left: 0%;" style="width: 100%;">
+                                            <div class="form-check" style="width: 100%;">
+                                                <label class="form-check-label" for="Image_Size">
+                                                    Image Size  &nbsp;:&nbsp;&nbsp;<span id="Image_Size_text"></span>
+                                                </label> <br/>
+                   
+    
+                                                <div class="funkyradio">
+                                                    <div class="funkyradio-default">
+                                                        <input type="radio" name="imagesize" id="size416" value="416"  checked/>
+                                                        <label for="size416">416x416</label>
+                                                    </div>
+                                                    <div class="funkyradio-default">
+                                                        <input type="radio" name="imagesize" id="size640" value="640" />
+                                                        <label for="size640">640x640</label>
+                                                    </div>
+                                                    <div class="funkyradio-default">
+                                                        <input type="radio" name="imagesize" id="size1280" value="1280" />
+                                                        <label for="size1280">1280x1280</label>
+                                                    </div>
+                                                </div>
+    
+    
+                                                
+                                            </div>
+                                           
+                                        </div>
+                                        <div style="margin-left: 0%;" style="width: 100%;">
+                                            <div class="form-check" style="width: 100%;">
+                                                <label class="form-check-label" for="Image_Size">
+                                                    CFG  &nbsp;:&nbsp;&nbsp;<span id="cfg_text"></span>
+                                                </label> <br/>
+                                                 
+                                                  <div class="funkyradio">
+                                                    <div class="funkyradio-default">
+                                                        <input type="radio" name="yolov5" id="yolo1" value="yolov5n" />
+                                                        <label for="yolo1">yolov5n.yaml</label>
+                                                    </div>
+                                                    <div class="funkyradio-default">
+                                                        <input type="radio" name="yolov5" id="yolo2" value="yolov5s" checked/>
+                                                        <label for="yolo2">yolov5s.yaml</label>
+                                                    </div>
+                                                    <div class="funkyradio-default">
+                                                        <input type="radio" name="yolov5" id="yolo3" value="yolov5m" />
+                                                        <label for="yolo3">yolov5m.yaml</label>
+                                                    </div>
+                                                    <div class="funkyradio-default">
+                                                        <input type="radio" name="yolov5" id="yolo4" value="yolov5l" />
+                                                        <label for="yolo4">yolov5l.yaml</label>
+                                                    </div>
+                                                    <div class="funkyradio-default">
+                                                        <input type="radio" name="yolov5" id="yolo5" value="yolov5x" />
+                                                        <label for="yolo5">yolov5x.yaml</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+    
+                                        <div style="margin-left: 0%;width: 50%;margin-top: 20px;">
+                                            <div class="form-check" style="width: 50%;">
+                                                <input class="btn btn-primary btn-sm" type="button" style="font-size: 12pt;" value="Training" onclick="training_strat(this)">
+                                                <span id="progress"></span>
+                                            </div>
+                                            <br/>
+                                        </div>
+                                    </div>
+                                    <div id=progress_space class="col-md-6" style="border: 1px solid;background-color: black;padding:10px;overflow-y: scroll;height: 60vh;flex-direction: column-reverse;">
+                                        <div  style="margin-left: 2%;" style="width: 100%;border: 1px solid;background-color: teal">
+                                                <span id="cmd-info" style="color:lightgreen;">Waitting for training... </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="store_label row" style="overflow-y: none;display: none;">
+                                    <il id="demo1" style="display: none;"></il>
+                                    <il id="demo2" style="display: none;"></il>
+                                    <il id="demo4" style="display: none;"></il>
+                                    <il id="demo3" style="display: none;"></il>
+                                   
+
+                                    <div class="col-md-8 label_card" style="display: none;">
+                                        <div class="card bg-success text-white mb-2">
+                                            <div class="card-body d-grid gap-2 d-flex justify-content-between">
+                                                    <div class="justify-content-start">
+                                                        <p class="text-start text-left" >Cucumber</p>
+                                                    </div>
+                                                    
+                                                    <div class="justify-content-end">
+                                                        <button type="button" class="ml-2 mb-1 d-flex justify-content-end"  onclick="label_delete(this)" >
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                            </div>
+                                            <div class="card-footer d-flex align-items-center justify-content-between overflow-auto">
+                                                xmin <b class="xmin"></b>
+                                                ymin <b class="ymin"></b>
+                                                xmax <b class="xmax"></b>
+                                                ymax <b class="ymax"></b>
+                                                h <b class="h"></b>
+                                                w <b class="w"></b>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </main>
+                <footer class="py-4 bg-light mt-auto">
+                    <div class="container-fluid px-4">
+                        <div class="d-flex align-items-center justify-content-between small">
+                            <div class="text-muted">Copyright &copy; Your Website 2022</div>
+                            <div>
+<!--                                <a href="#">Privacy Policy</a>-->
+<!--                                &middot-->
+<!--                                <a href="#">Terms &amp; Conditions</a>-->
+                            </div>
+                        </div>
+                    </div>
+
+
+                </footer>
+            </div>
+        </div>
+        <script src="static/js/scripts.js"></script>
+        <script src="static/assets/demo/chart-area-demo.js"></script>
+        <script src="static/assets/demo/chart-bar-demo.js"></script>
+        <script src="static/js/datatables-simple-demo.js"></script>
+
+
+    <script src="static/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="static/js/simple-datatables@latest.js" ></script>
+    <script src="static/js/datatables-simple-demo.js"></script>
+<!--        <script src="js/scripts.js"></script>-->
+<!--        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>-->
+<!--        <script src="assets/demo/chart-area-demo.js"></script>-->
+<!--        <script src="assets/demo/chart-bar-demo.js"></script>-->
+<!--        <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>-->
+<!--        <script src="js/datatables-simple-demo.js"></script>-->
+    </body>
+
+   
+
+
+    
+</html>
